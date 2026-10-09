@@ -1,6 +1,6 @@
 # Plug: working notes for Claude
 
-A macOS audio host, built as a clean-room re-implementation of the features of a commercial audio-routing app (Audio Hijack-style: capture app and system audio, route it through effects, record or pass it on).
+An Audio Unit (AU) plugin host for macOS. It sits between apps or system audio and the physical or external playback devices, loads AU effect plugins into that path, and passes the processed audio on to the output device.
 
 ## Clean-room rules
 - Build from Apple's public APIs and documentation only: CoreAudio, AVFoundation, Audio Unit / AUv3, Audio Taps (`AudioHardwareCreateProcessTap`), and documented driver interfaces.
@@ -10,6 +10,7 @@ A macOS audio host, built as a clean-room re-implementation of the features of a
 
 ## Layout
 - `Plug/`: the app (SwiftUI front end, audio engine in Swift/C).
+- Audio path: app or system audio -> Plug's capture stage -> AU effect chain -> chosen output device. Plugin loading uses AUv3 and AudioUnit APIs only.
 - `docs/research/`: observed behaviour notes (no code).
 - `docs/`: design notes.
 
