@@ -30,11 +30,16 @@ struct PlugApp: App {
         }
 
         MenuBarExtra {
-            MenuBarVolume(model: appDelegate.model)
+            MenuBarVolume(model: appDelegate.model, buttons: appDelegate.buttons)
         } label: {
             Image(nsImage: MenuBarIcon.image)
         }
         .menuBarExtraStyle(.window)
+
+        // Plug > Settings… (Command-comma), also opened from the menu bar.
+        Settings {
+            ButtonsSettings(buttons: appDelegate.buttons, host: appDelegate.model)
+        }
     }
 }
 
@@ -44,6 +49,8 @@ struct PlugApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Created on first use (the window's first appearance), on the main thread.
     private(set) lazy var model = HostModel()
+    /// The menu bar buttons, which can drive the model.
+    private(set) lazy var buttons = QuickButtonsModel(host: model)
 
     /// Master levels offered in the Dock menu, in dB; nil is mute.
     private static let dockLevels: [Double?] = [10, 6, 3, 0, -3, -6, -12, -24, nil]
