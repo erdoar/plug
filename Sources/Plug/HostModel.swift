@@ -31,7 +31,7 @@ final class HostModel: ObservableObject {
     @Published private(set) var audioApps: [AudioApp] = []
     @Published private(set) var capturedApps: Set<String> = []
     /// The master knob's position, 0...1 (see `MasterVolume`).
-    @Published private(set) var masterPosition: Double = 1
+    @Published private(set) var masterPosition: Double = MasterVolume.unityPosition
     @Published private(set) var masterMIDI: MIDIBinding?
     @Published private(set) var isLearningMIDI = false
     @Published var errorMessage: String?
@@ -82,7 +82,7 @@ final class HostModel: ObservableObject {
                 pendingStates[slot.id] = state
             }
         }
-        setMasterPosition(settings.masterVolume)
+        setMasterPosition(settings.masterPosition)
         masterMIDI = settings.masterMIDI
         capturedApps = Set(settings.capturedApps)
         try? engine.setCapturedApps(capturedApps)
@@ -107,7 +107,7 @@ final class HostModel: ObservableObject {
                 }
             },
             capturedApps: capturedApps.sorted(),
-            masterVolume: masterPosition,
+            masterPosition: masterPosition,
             masterMIDI: masterMIDI
         )
         do {

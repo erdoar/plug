@@ -36,7 +36,7 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 - `Tests/PlugEngineTests/`: engine tests using Apple's built-in AUDelay. macOS only; they wire the graph but play no sound.
 
 ## Known limits
-- The master knob sits after the effect chain and goes from silence up to unity (0 dB); it never boosts. MIDI Learn binds it to one control change (channel and controller) from any MIDI source; MIDI is receive-only, so motorised faders aren't moved to match.
+- The master knob sits after the effect chain and goes from silence to +10 dB; 0 dB is at 80% of the turn, marked by the bent tack (click the tack to return there). Boosted audio that goes over full scale clips at the output. MIDI Learn binds it to one control change (channel and controller) from any MIDI source; MIDI is receive-only, so motorised faders aren't moved to match.
 - `swift run` starts the app without an `.app` bundle or `Info.plist`, so anything that needs permission must be run from `scripts/bundle.sh` instead.
 - The bundle is signed ad hoc, so macOS may ask for permission again after each rebuild.
 - System audio capture needs the bundled app and macOS's System Audio Recording permission (System Settings > Privacy & Security > Screen & System Audio Recording).

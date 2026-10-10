@@ -27,17 +27,17 @@ public struct HostSettings: Codable, Equatable {
     /// App keys (see `AppKey`) captured when the input is `.apps`.
     public var capturedApps: [String]
     /// The master knob's position, 0...1 (see `MasterVolume`).
-    public var masterVolume: Double
+    public var masterPosition: Double
     /// The MIDI control learned for the master knob.
     public var masterMIDI: MIDIBinding?
 
     public init(input: InputSource, outputDeviceUID: String?, slots: [SavedSlot], capturedApps: [String] = [],
-                masterVolume: Double = 1, masterMIDI: MIDIBinding? = nil) {
+                masterPosition: Double = MasterVolume.unityPosition, masterMIDI: MIDIBinding? = nil) {
         self.input = input
         self.outputDeviceUID = outputDeviceUID
         self.slots = slots
         self.capturedApps = capturedApps
-        self.masterVolume = masterVolume
+        self.masterPosition = masterPosition
         self.masterMIDI = masterMIDI
     }
 
@@ -49,7 +49,7 @@ public struct HostSettings: Codable, Equatable {
         outputDeviceUID = try container.decodeIfPresent(String.self, forKey: .outputDeviceUID)
         slots = try container.decode([SavedSlot].self, forKey: .slots)
         capturedApps = try container.decodeIfPresent([String].self, forKey: .capturedApps) ?? []
-        masterVolume = try container.decodeIfPresent(Double.self, forKey: .masterVolume) ?? 1
+        masterPosition = try container.decodeIfPresent(Double.self, forKey: .masterPosition) ?? MasterVolume.unityPosition
         masterMIDI = try container.decodeIfPresent(MIDIBinding.self, forKey: .masterMIDI)
     }
 }

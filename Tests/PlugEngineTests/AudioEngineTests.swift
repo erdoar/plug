@@ -81,12 +81,18 @@ final class AudioEngineTests: XCTestCase {
     }
 
     @MainActor
-    func testMasterGainIsClampedToUnity() {
+    func testMasterGainCutsBoostsAndClamps() {
         let engine = AudioEngine()
         engine.masterGain = 0.25
         XCTAssertEqual(engine.masterGain, 0.25, accuracy: 0.0001)
         engine.masterGain = 3
-        XCTAssertEqual(engine.masterGain, 1, accuracy: 0.0001)
+        XCTAssertEqual(engine.masterGain, 3, accuracy: 0.0001)
+        engine.masterGain = 10
+        XCTAssertEqual(engine.masterGain, AudioEngine.maximumMasterGain, accuracy: 0.0001)
+        XCTAssertEqual(AudioEngine.maximumMasterGain, MasterVolume.maximumGain, accuracy: 0.0001,
+                       "the engine allows exactly the knob's +10 dB")
+        engine.masterGain = 0
+        XCTAssertEqual(engine.masterGain, 0)
     }
 
     func testMIDIInputStarts() throws {

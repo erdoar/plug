@@ -14,6 +14,7 @@ struct MasterKnob: View {
                         position: model.masterPosition)
             DialKnob(angle: .degrees(-135 + 270 * model.masterPosition), size: 84, animated: dragStart == nil)
                 .contentShape(Circle())
+                .overlay { unityTack }
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { drag in
@@ -40,6 +41,23 @@ struct MasterKnob: View {
                 learnPlate
             }
         }
+    }
+
+    /// The tack marking 0 dB beside the knob's rim; clicking it returns
+    /// the knob to 0 dB.
+    private var unityTack: some View {
+        let angle = (-135 + 270 * MasterVolume.unityPosition) * Double.pi / 180
+        let radius = 84.0 / 2 + 11
+        return BentTack()
+            .offset(x: radius * sin(angle), y: -radius * cos(angle))
+            .onTapGesture {
+                model.setMasterPosition(MasterVolume.unityPosition)
+                model.saveSettings()
+            }
+            .help("0 dB. Click to return the master here.")
+            .accessibilityElement()
+            .accessibilityLabel("Return master to 0 dB")
+            .accessibilityAddTraits(.isButton)
     }
 
     private var learnPlate: some View {

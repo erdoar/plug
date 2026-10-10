@@ -46,13 +46,13 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(loaded.input, .systemAudio)
         XCTAssertNil(loaded.outputDeviceUID)
         XCTAssertEqual(loaded.capturedApps, [])
-        XCTAssertEqual(loaded.masterVolume, 1)
+        XCTAssertEqual(loaded.masterPosition, MasterVolume.unityPosition, "starts at 0 dB")
         XCTAssertNil(loaded.masterMIDI)
     }
 
     func testMasterSettingsRoundTrip() throws {
         let settings = HostSettings(input: .testTone, outputDeviceUID: nil, slots: [],
-                                    masterVolume: 0.42, masterMIDI: MIDIBinding(channel: 3, controller: 21))
+                                    masterPosition: 0.42, masterMIDI: MIDIBinding(channel: 3, controller: 21))
         let url = directory.appendingPathComponent("settings.json")
         try SettingsStore.save(settings, to: url)
         XCTAssertEqual(SettingsStore.load(from: url), settings)

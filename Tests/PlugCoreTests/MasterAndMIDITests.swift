@@ -3,11 +3,13 @@ import XCTest
 @testable import PlugCore
 
 final class MasterVolumeTests: XCTestCase {
-    func testEndsAreSilenceAndUnity() {
+    func testSilenceUnityAndBoost() {
         XCTAssertEqual(MasterVolume.gain(forPosition: 0), 0)
-        XCTAssertEqual(MasterVolume.gain(forPosition: 1), 1)
+        XCTAssertEqual(MasterVolume.gain(forPosition: MasterVolume.unityPosition), 1, accuracy: 0.0001)
+        XCTAssertEqual(MasterVolume.gain(forPosition: 1), MasterVolume.maximumGain, accuracy: 0.0001)
+        XCTAssertEqual(MasterVolume.maximumGain, 3.1623, accuracy: 0.0001, "+10 dB")
         XCTAssertEqual(MasterVolume.gain(forPosition: -3), 0, "clamped")
-        XCTAssertEqual(MasterVolume.gain(forPosition: 4), 1, "never boosts")
+        XCTAssertEqual(MasterVolume.gain(forPosition: 4), MasterVolume.maximumGain, accuracy: 0.0001, "clamped")
     }
 
     func testRisesSteadily() {
@@ -17,9 +19,11 @@ final class MasterVolumeTests: XCTestCase {
     }
 
     func testLabels() {
-        XCTAssertEqual(MasterVolume.label(forPosition: 1), "0.0 dB")
+        XCTAssertEqual(MasterVolume.label(forPosition: MasterVolume.unityPosition), "0.0 dB")
+        XCTAssertEqual(MasterVolume.label(forPosition: 1), "+10.0 dB")
+        XCTAssertEqual(MasterVolume.label(forPosition: 0.9), "+5.0 dB")
         XCTAssertEqual(MasterVolume.label(forPosition: 0), "-∞ dB")
-        XCTAssertEqual(MasterVolume.label(forPosition: 0.5), "-18.1 dB")
+        XCTAssertEqual(MasterVolume.label(forPosition: 0.4), "-18.1 dB")
     }
 }
 
