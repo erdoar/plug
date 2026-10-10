@@ -1,6 +1,6 @@
 # Plug
 
-A macOS audio host: capture application and system audio, route it through effects, and record or pass it on.
+An Audio Unit plugin host for macOS. Plug sits between apps or system audio and your playback devices, loads AU effect plugins into that path, and sends the processed audio to the output device.
 
 Status: early skeleton. A window with a placeholder effect chain; no audio routing or plugin loading yet.
 
