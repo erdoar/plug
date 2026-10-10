@@ -21,6 +21,16 @@ public enum MasterVolume {
         return Float(below * below * below)
     }
 
+    /// The knob position for a level in decibels; nil (silence) gives 0.
+    /// Levels above +10 dB give the top of the knob.
+    public static func position(forDecibels decibels: Double?) -> Double {
+        guard let decibels else { return 0 }
+        if decibels >= 0 {
+            return min(unityPosition + (1 - unityPosition) * decibels / maximumBoost, 1)
+        }
+        return unityPosition * cbrt(pow(10, decibels / 20))
+    }
+
     /// The level in decibels, nil for silence.
     public static func decibels(forPosition position: Double) -> Double? {
         let gain = Double(gain(forPosition: position))
