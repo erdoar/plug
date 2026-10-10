@@ -15,10 +15,18 @@ swift test           # run the unit tests
 swift run Plug       # launch the app
 ```
 
+To build a proper app bundle, which macOS needs before it will grant audio-capture or microphone permission:
+
+```
+scripts/bundle.sh --open   # builds build/Plug.app and launches it
+```
+
 To work in Xcode instead, open the folder that contains `Package.swift` (File > Open, or `open Package.swift`). Xcode shows a `Plug` scheme: Cmd+R runs the app, Cmd+U runs the tests.
 
 ## Layout
 - `Package.swift`: the package manifest.
+- `Bundle/Info.plist`: the app bundle's Info.plist template, including the permission prompts' wording.
+- `scripts/bundle.sh`: builds `build/Plug.app` and signs it ad hoc.
 - `Sources/PlugCore/`: plain-Swift models (`PluginChain`, `EffectID`). Builds on any platform.
 - `Sources/PlugEngine/`: the audio engine. `AudioEngine` wires test tone -> effects -> output; `EffectCatalog` lists installed AU effects. macOS only, no UI.
 - `Sources/Plug/`: the SwiftUI app (`PlugApp`, `HostModel`, `UI/`). macOS only.
@@ -26,5 +34,6 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 - `Tests/PlugEngineTests/`: engine tests using Apple's built-in AUDelay. macOS only; they wire the graph but play no sound.
 
 ## Known limits
-- `swift run` starts the app without an `.app` bundle, so it has no `Info.plist`. macOS needs one to ask for microphone or audio-capture permission. Before audio capture is added, the build needs a step that wraps the app in a bundle.
+- `swift run` starts the app without an `.app` bundle or `Info.plist`, so anything that needs permission must be run from `scripts/bundle.sh` instead.
+- The bundle is signed ad hoc, so macOS may ask for permission again after each rebuild.
 - Not yet done: app and system audio capture, plugin editor windows. The output choice is not remembered between launches.
