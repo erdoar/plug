@@ -30,6 +30,7 @@ rm -rf "$app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin_dir/Plug" "$app/Contents/MacOS/Plug"
 sed "s/BUNDLE_ID/$bundle_id/" Bundle/Info.plist > "$app/Contents/Info.plist"
+iconutil -c icns Bundle/AppIcon.iconset -o "$app/Contents/Resources/AppIcon.icns"
 plutil -lint "$app/Contents/Info.plist" >/dev/null
 
 # Ad-hoc signature: enough to run locally. macOS keys permissions to the
