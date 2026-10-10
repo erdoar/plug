@@ -30,6 +30,23 @@ struct ContentView: View {
                 .fixedSize()
             }
 
+            HStack {
+                Picker("Output", selection: Binding(
+                    get: { model.selectedOutputID ?? 0 },
+                    set: { model.selectOutput($0) }
+                )) {
+                    ForEach(model.outputDevices) { device in
+                        Text(device.name).tag(device.id)
+                    }
+                }
+                Button {
+                    model.refreshOutputDevices()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .help("Refresh the device list")
+            }
+
             List {
                 ForEach(model.chain.slots) { slot in
                     HStack {
