@@ -5,7 +5,7 @@ import PlugRingBuffer
 /// Owns the audio graph:
 ///
 ///     test tone ----------\
-///                          input mixer -> effect chain -> main mixer -> output device
+///                          input mixer -> effect chain -> master -> main mixer -> output device
 ///     system audio tap ---/
 ///
 /// The input mixer converts the capture's sample rate; the input switch just
@@ -16,6 +16,10 @@ public final class AudioEngine {
     private let engine: AVAudioEngine
     private let format: AVAudioFormat
     private let inputMixer: AVAudioMixerNode
+    /// The master stage after the effects: an EQ with no bands, used for its
+    /// global gain (up to +24 dB), so the master can boost as well as cut.
+    private let master: AVAudioUnitEQ
+    private var masterGainValue: Float = 1
     private let tone: AVAudioSourceNode
     private let ring = CaptureRing()
     private var captureNode: AVAudioSourceNode?
@@ -34,6 +38,26 @@ public final class AudioEngine {
 
     public var isRunning: Bool { engine.isRunning }
 
+    /// The most the master can boost: +10 dB.
+    public static let maximumMasterGain = Float(pow(10.0, 0.5))
+
+    /// The master level after the whole effect chain, as a linear gain from 0
+    /// (silent) through 1 (unity) to `maximumMasterGain`. Boosted audio that
+    /// goes over full scale clips at the output.
+    public var masterGain: Float {
+        get { masterGainValue }
+        set {
+            masterGainValue = min(max(newValue, 0), Self.maximumMasterGain)
+            if masterGainValue == 0 {
+                engine.mainMixerNode.outputVolume = 0
+                master.globalGain = 0
+            } else {
+                engine.mainMixerNode.outputVolume = 1
+                master.globalGain = 20 * log10(masterGainValue)
+            }
+        }
+    }
+
     public init() {
         let engine = AVAudioEngine()
         let outputRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
@@ -46,10 +70,14 @@ public final class AudioEngine {
         engine.attach(inputMixer)
         engine.attach(tone)
         engine.connect(tone, to: inputMixer, fromBus: 0, toBus: 0, format: format)
-        engine.connect(inputMixer, to: engine.mainMixerNode, fromBus: 0, toBus: 0, format: format)
+        let master = AVAudioUnitEQ(numberOfBands: 0)
+        engine.attach(master)
+        engine.connect(inputMixer, to: master, fromBus: 0, toBus: 0, format: format)
+        engine.connect(master, to: engine.mainMixerNode, fromBus: 0, toBus: 0, format: format)
         self.engine = engine
         self.format = format
         self.inputMixer = inputMixer
+        self.master = master
         self.tone = tone
     }
 
@@ -250,7 +278,7 @@ public final class AudioEngine {
             engine.connect(previous, to: unit, fromBus: 0, toBus: 0, format: format)
             previous = unit
         }
-        engine.connect(previous, to: engine.mainMixerNode, fromBus: 0, toBus: 0, format: format)
+        engine.connect(previous, to: master, fromBus: 0, toBus: 0, format: format)
         wiredSlotIDs = order
         if wasRunning { try engine.start() }
     }

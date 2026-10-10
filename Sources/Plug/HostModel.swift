@@ -30,6 +30,10 @@ final class HostModel: ObservableObject {
     @Published private(set) var input: InputSource = .testTone
     @Published private(set) var audioApps: [AudioApp] = []
     @Published private(set) var capturedApps: Set<String> = []
+    /// The master knob's position, 0...1 (see `MasterVolume`).
+    @Published private(set) var masterPosition: Double = MasterVolume.unityPosition
+    @Published private(set) var masterMIDI: MIDIBinding?
+    @Published private(set) var isLearningMIDI = false
     @Published var errorMessage: String?
     let effectGroups: [EffectGroup]
 
@@ -39,6 +43,8 @@ final class HostModel: ObservableObject {
     /// asynchronously). Saving uses these until the unit has its own.
     private var pendingStates: [UUID: Data] = [:]
     private var terminationObserver: NSObjectProtocol?
+    private var midiInput: MIDIInput?
+    private var pendingSave: Task<Void, Never>?
 
     private static let settingsURL = FileManager.default
         .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -53,6 +59,7 @@ final class HostModel: ObservableObject {
         selectedOutputID = OutputDevices.defaultDeviceID()
         refreshOutputDevices()
         restoreSettings()
+        startMIDI()
         // Effect parameters change in their own windows without telling the
         // model, so save once more on the way out.
         terminationObserver = NotificationCenter.default.addObserver(
@@ -75,6 +82,8 @@ final class HostModel: ObservableObject {
                 pendingStates[slot.id] = state
             }
         }
+        setMasterPosition(settings.masterPosition)
+        masterMIDI = settings.masterMIDI
         capturedApps = Set(settings.capturedApps)
         try? engine.setCapturedApps(capturedApps)
         if let uid = settings.outputDeviceUID,
@@ -97,12 +106,68 @@ final class HostModel: ObservableObject {
                               state: engine.savedState(for: slot.id) ?? pendingStates[slot.id])
                 }
             },
-            capturedApps: capturedApps.sorted()
+            capturedApps: capturedApps.sorted(),
+            masterPosition: masterPosition,
+            masterMIDI: masterMIDI
         )
         do {
             try SettingsStore.save(settings, to: Self.settingsURL)
         } catch {
             errorMessage = "Couldn't save settings: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Master volume and MIDI
+
+    func setMasterPosition(_ position: Double) {
+        masterPosition = min(max(position, 0), 1)
+        engine.masterGain = MasterVolume.gain(forPosition: masterPosition)
+    }
+
+    func toggleMIDILearn() {
+        isLearningMIDI.toggle()
+        if isLearningMIDI, midiInput == nil {
+            errorMessage = "MIDI isn't available, so there's nothing to learn from."
+            isLearningMIDI = false
+        }
+    }
+
+    func forgetMIDI() {
+        masterMIDI = nil
+        isLearningMIDI = false
+        saveSettings()
+    }
+
+    private func startMIDI() {
+        do {
+            let input = try MIDIInput()
+            input.onControlChange = { [weak self] change in
+                MainActor.assumeIsolated { self?.handle(change) }
+            }
+            midiInput = input
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func handle(_ change: ControlChange) {
+        if isLearningMIDI {
+            masterMIDI = MIDIBinding(channel: change.channel, controller: change.controller)
+            isLearningMIDI = false
+            saveSettings()
+        } else if masterMIDI?.matches(change) == true {
+            setMasterPosition(Double(change.value) / 127)
+            saveSoon()
+        }
+    }
+
+    /// Controllers send many messages per turn; save once they settle.
+    private func saveSoon() {
+        pendingSave?.cancel()
+        pendingSave = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled else { return }
+            self?.saveSettings()
         }
     }
 

@@ -26,12 +26,19 @@ public struct HostSettings: Codable, Equatable {
     public var slots: [SavedSlot]
     /// App keys (see `AppKey`) captured when the input is `.apps`.
     public var capturedApps: [String]
+    /// The master knob's position, 0...1 (see `MasterVolume`).
+    public var masterPosition: Double
+    /// The MIDI control learned for the master knob.
+    public var masterMIDI: MIDIBinding?
 
-    public init(input: InputSource, outputDeviceUID: String?, slots: [SavedSlot], capturedApps: [String] = []) {
+    public init(input: InputSource, outputDeviceUID: String?, slots: [SavedSlot], capturedApps: [String] = [],
+                masterPosition: Double = MasterVolume.unityPosition, masterMIDI: MIDIBinding? = nil) {
         self.input = input
         self.outputDeviceUID = outputDeviceUID
         self.slots = slots
         self.capturedApps = capturedApps
+        self.masterPosition = masterPosition
+        self.masterMIDI = masterMIDI
     }
 
     /// Files saved before a field existed still load, with its default.
@@ -42,6 +49,8 @@ public struct HostSettings: Codable, Equatable {
         outputDeviceUID = try container.decodeIfPresent(String.self, forKey: .outputDeviceUID)
         slots = try container.decode([SavedSlot].self, forKey: .slots)
         capturedApps = try container.decodeIfPresent([String].self, forKey: .capturedApps) ?? []
+        masterPosition = try container.decodeIfPresent(Double.self, forKey: .masterPosition) ?? MasterVolume.unityPosition
+        masterMIDI = try container.decodeIfPresent(MIDIBinding.self, forKey: .masterMIDI)
     }
 }
 
