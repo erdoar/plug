@@ -19,6 +19,7 @@ struct PresetBar: View {
             TuningScale(reading: model.currentPreset ?? "No preset",
                         position: dialPosition(of: index, count: names.count),
                         width: 220)
+            Spacer()
             Button {
                 isListOpen.toggle()
             } label: {
@@ -43,7 +44,6 @@ struct PresetBar: View {
             }
             .buttonStyle(PressableButtonStyle())
             .help("Save everything as a preset: input, apps, output, effects and their settings, and the master level")
-            Spacer()
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
