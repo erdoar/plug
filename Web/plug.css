@@ -1,0 +1,94 @@
+/* Plug brand colours and the manual's page style. */
+:root {
+  --plug-pine-light: #EBCB92;
+  --plug-pine-dark: #D4AA6C;
+  --plug-grain: #93612F;
+  --plug-ink: #4A2A12;
+  --plug-red: #C0301A;
+  --plug-lamp-green: #21A83D;
+  --plug-lamp-red: #D11F14;
+  --plug-brass: #EDCC80;
+  --plug-paper: #FFF8EC;
+  --plug-text: #2B1A0C;
+  --plug-rule: #E2C99A;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --plug-paper: #1E1610;
+    --plug-text: #F2E4CC;
+    --plug-ink: #EBCB92;
+    --plug-rule: #4A3520;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--plug-paper);
+  color: var(--plug-text);
+  font: 17px/1.6 Georgia, "New York", "Times New Roman", serif;
+}
+
+.masthead {
+  background: linear-gradient(var(--plug-pine-light), var(--plug-pine-dark));
+  border-bottom: 4px solid var(--plug-grain);
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.masthead img {
+  width: min(420px, 100%);
+  height: auto;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+h1, h2, h3 {
+  color: var(--plug-ink);
+  line-height: 1.25;
+}
+
+h2 {
+  border-bottom: 2px solid var(--plug-rule);
+  padding-bottom: 4px;
+  margin-top: 2.2em;
+}
+
+a {
+  color: var(--plug-red);
+}
+
+code, pre {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+pre {
+  background: rgba(147, 97, 47, 0.12);
+  border-left: 4px solid var(--plug-grain);
+  padding: 10px 14px;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  display: block;
+  overflow-x: auto;
+}
+
+th, td {
+  border: 1px solid var(--plug-rule);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: rgba(212, 170, 108, 0.35);
+}
