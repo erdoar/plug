@@ -1,9 +1,9 @@
 import SwiftUI
 
 /// The strip of pine at the bottom of the window: the current preset on a
-/// tuning scale, a small knob that opens the preset list (recall or delete),
-/// the drawer handle, and a brass plate to save the current setup as a
-/// preset.
+/// tuning scale on the left, the drawer handle in the centre, and on the
+/// right a small knob that opens the preset list (recall or delete) and a
+/// brass plate to save the current setup as a preset.
 struct PresetBar: View {
     @ObservedObject var model: HostModel
     @Binding var isDrawerOpen: Bool
@@ -31,11 +31,6 @@ struct PresetBar: View {
             .popover(isPresented: $isListOpen, arrowEdge: .top) {
                 presetList(names)
             }
-            DrawerHandle(isOpen: isDrawerOpen) {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isDrawerOpen.toggle()
-                }
-            }
             Button {
                 newName = model.currentPreset ?? ""
                 isNaming = true
@@ -44,6 +39,14 @@ struct PresetBar: View {
             }
             .buttonStyle(PressableButtonStyle())
             .help("Save everything as a preset: input, apps, output, effects and their settings, and the master level")
+        }
+        // The drawer handle sits at the exact centre of the strip.
+        .overlay {
+            DrawerHandle(isOpen: isDrawerOpen) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isDrawerOpen.toggle()
+                }
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
