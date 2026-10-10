@@ -4,7 +4,7 @@ import PlugCore
 /// Help, About and update checks for Plug's menus.
 @MainActor
 enum HelpAndUpdates {
-    static let projectPage = URL(string: "https://github.com/erdoar/plug")!
+    static let downloadPage = URL(string: "https://github.com/erdoar/plug/releases")!
     private static let manualOnline = URL(string: "https://github.com/erdoar/plug/blob/main/MANUAL.md")!
     private static let latestRelease = URL(string: "https://api.github.com/repos/erdoar/plug/releases/latest")!
 
@@ -42,25 +42,23 @@ enum HelpAndUpdates {
                 result = UpdateCheck.evaluate(currentVersion: version, latest: try await fetchLatestRelease())
             } catch {
                 show(title: "Couldn't check for updates",
-                     message: "\(error.localizedDescription)\n\nYou can check Plug's GitHub page yourself.",
-                     link: ("Open GitHub Page", projectPage))
+                     message: "Check your internet connection and try again.\n\n(\(error.localizedDescription))",
+                     link: ("Open Download Page", downloadPage))
                 return
             }
             switch result {
             case .newer(let available, let pageURL, let current):
                 show(title: "Plug \(available) is available",
-                     message: "You have Plug \(current).\n\nIf you build Plug yourself, update with:\ngit pull, then scripts/bundle.sh",
-                     link: ("Open Download Page", URL(string: pageURL) ?? projectPage))
+                     message: "You have Plug \(current). Download the new disk image, quit Plug, and drag the new Plug onto Applications to replace it.",
+                     link: ("Open Download Page", URL(string: pageURL) ?? downloadPage))
             case .upToDate(let current):
                 show(title: "Plug is up to date", message: "You have Plug \(current), the latest release.", link: nil)
             case .noReleases:
-                show(title: "No releases yet",
-                     message: "No Plug release has been published yet. If you build Plug yourself, git pull gets the latest changes.",
-                     link: ("Open GitHub Page", projectPage))
+                show(title: "Plug is up to date", message: "No newer version is available.", link: nil)
             case .cannotCompare:
-                show(title: "Can't compare versions",
-                     message: "This copy of Plug has no version to compare (for example when run with swift run). Build it with scripts/bundle.sh, or check the GitHub page.",
-                     link: ("Open GitHub Page", projectPage))
+                show(title: "Couldn't compare versions",
+                     message: "You can see the latest Plug on the download page.",
+                     link: ("Open Download Page", downloadPage))
             }
         }
     }
