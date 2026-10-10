@@ -1,3 +1,4 @@
+import PlugCore
 import SwiftUI
 
 struct ContentView: View {

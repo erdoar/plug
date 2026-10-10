@@ -1,5 +1,5 @@
 import XCTest
-@testable import Plug
+@testable import PlugCore
 
 final class PluginChainTests: XCTestCase {
     func testAppendAndRemove() {

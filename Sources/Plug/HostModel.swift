@@ -1,5 +1,7 @@
 import Combine
 import Foundation
+import PlugCore
+import PlugEngine
 
 /// App state shared by the UI. Holds the chain and the engine.
 @MainActor
