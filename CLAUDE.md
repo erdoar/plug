@@ -21,7 +21,7 @@ An Audio Unit (AU) plugin host for macOS. It sits between apps or system audio a
 
 ## Build and test
 - `swift build`, `swift test`, `swift run Plug` from the repo root. On Linux only PlugCore and its tests build; the engine and app targets are added only on macOS (see `Package.swift`).
-- `swift run` launches the app without an `.app` bundle or `Info.plist`, so it cannot ask for microphone or audio-capture permission. Add a bundling step before any feature that needs one.
+- `swift run` launches the app without an `.app` bundle or `Info.plist`, so it cannot ask for microphone or audio-capture permission. `scripts/bundle.sh` builds `build/Plug.app` from `Bundle/Info.plist` and signs it ad hoc; use it for anything that needs permission. New usage-description keys go in `Bundle/Info.plist`.
 
 ## Working rules
 - Keep the audio engine independent of the UI so it can be tested without a window.
