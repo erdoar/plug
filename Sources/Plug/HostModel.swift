@@ -11,6 +11,14 @@ struct EffectGroup: Identifiable {
     var id: String { manufacturer }
 }
 
+/// An app that can be captured, for the Apps input list.
+struct AudioApp: Identifiable {
+    /// The app key (see `AppKey`).
+    let id: String
+    let name: String
+    let isPlaying: Bool
+}
+
 /// App state shared by the UI. Holds the chain and the engine, and keeps the
 /// engine's effects in step with the chain.
 @MainActor
@@ -20,6 +28,8 @@ final class HostModel: ObservableObject {
     @Published private(set) var outputDevices: [OutputDevice] = []
     @Published private(set) var selectedOutputID: UInt32?
     @Published private(set) var input: InputSource = .testTone
+    @Published private(set) var audioApps: [AudioApp] = []
+    @Published private(set) var capturedApps: Set<String> = []
     @Published var errorMessage: String?
     let effectGroups: [EffectGroup]
 
@@ -65,6 +75,8 @@ final class HostModel: ObservableObject {
                 pendingStates[slot.id] = state
             }
         }
+        capturedApps = Set(settings.capturedApps)
+        try? engine.setCapturedApps(capturedApps)
         if let uid = settings.outputDeviceUID,
            let device = outputDevices.first(where: { $0.uid == uid }),
            device.id != selectedOutputID {
@@ -84,7 +96,8 @@ final class HostModel: ObservableObject {
                     SavedSlot(name: slot.name, effect: effect, isBypassed: slot.isBypassed,
                               state: engine.savedState(for: slot.id) ?? pendingStates[slot.id])
                 }
-            }
+            },
+            capturedApps: capturedApps.sorted()
         )
         do {
             try SettingsStore.save(settings, to: Self.settingsURL)
@@ -102,11 +115,65 @@ final class HostModel: ObservableObject {
             try engine.setInput(source)
             input = source
             errorMessage = nil
+            if source == .apps {
+                refreshAudioApps()
+            }
             saveSettings()
         } catch {
             errorMessage = "Couldn't switch input: \(error.localizedDescription)"
         }
         isRunning = engine.isRunning
+    }
+
+    /// Lists apps that are playing, ordinary apps that have opened audio, and
+    /// any already chosen (so they can be unticked even when closed).
+    func refreshAudioApps() {
+        var playing: [String: Bool] = [:]
+        for process in AudioProcesses.all() {
+            playing[process.appKey, default: false] = playing[process.appKey, default: false] || process.isPlaying
+        }
+        let keys = Set(playing.keys.filter { playing[$0] == true || Self.isRegularApp($0) })
+            .union(capturedApps)
+        audioApps = keys
+            .map { AudioApp(id: $0, name: Self.appName(for: $0), isPlaying: playing[$0] ?? false) }
+            .sorted { ($0.isPlaying ? 0 : 1, $0.name.lowercased()) < ($1.isPlaying ? 0 : 1, $1.name.lowercased()) }
+    }
+
+    func setApp(_ appKey: String, captured: Bool) {
+        var keys = capturedApps
+        if captured {
+            keys.insert(appKey)
+        } else {
+            keys.remove(appKey)
+        }
+        capturedApps = keys
+        do {
+            try engine.setCapturedApps(keys)
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isRunning = engine.isRunning
+        saveSettings()
+    }
+
+    private static func isRegularApp(_ appKey: String) -> Bool {
+        NSRunningApplication.runningApplications(withBundleIdentifier: appKey)
+            .contains { $0.activationPolicy == .regular }
+    }
+
+    private static func appName(for appKey: String) -> String {
+        // Safari and other WebKit apps play web audio from a shared process.
+        if appKey.hasPrefix("com.apple.WebKit") {
+            return "Safari and web views"
+        }
+        if let name = NSRunningApplication.runningApplications(withBundleIdentifier: appKey).first?.localizedName {
+            return name
+        }
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: appKey) {
+            return FileManager.default.displayName(atPath: url.path)
+        }
+        return appKey
     }
 
     func selectOutput(_ deviceID: UInt32) {

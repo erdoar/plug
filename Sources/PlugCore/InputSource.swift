@@ -4,4 +4,6 @@ public enum InputSource: String, Hashable, CaseIterable, Codable {
     case testTone
     /// Everything the Mac plays, except Plug itself.
     case systemAudio
+    /// Only the apps the user picked (see `AppKey`).
+    case apps
 }

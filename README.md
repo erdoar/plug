@@ -2,7 +2,7 @@
 
 An Audio Unit plugin host for macOS. Plug sits between apps or system audio and your playback devices, loads AU effect plugins into that path, and sends the processed audio to the output device.
 
-Status: early. Captures everything the Mac plays (or a test tone), runs it through Audio Unit effects you pick from the ones installed on your Mac, and plays it to the output device you choose. While capturing, other apps are heard only through Plug.
+Status: early. Captures everything the Mac plays, or just the apps you pick (or a test tone), runs it through Audio Unit effects you pick from the ones installed on your Mac, and plays it to the output device you choose. While capturing, other apps are heard only through Plug.
 
 See `CLAUDE.md` for the clean-room rules this project follows.
 
@@ -38,4 +38,4 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 - `swift run` starts the app without an `.app` bundle or `Info.plist`, so anything that needs permission must be run from `scripts/bundle.sh` instead.
 - The bundle is signed ad hoc, so macOS may ask for permission again after each rebuild.
 - System audio capture needs the bundled app and macOS's System Audio Recording permission (System Settings > Privacy & Security > Screen & System Audio Recording).
-- Not yet done: capturing single apps. Input, output and the effect chain (with each effect's settings) are saved to `~/Library/Application Support/Plug/settings.json` and restored on launch; Plug never starts playing by itself.
+- With the Apps input, apps are matched by bundle ID with their helper processes; an app opened while Plug runs joins at the next Start. Safari and other WebKit apps share one audio process, so they are captured together. Input, output and the effect chain (with each effect's settings) are saved to `~/Library/Application Support/Plug/settings.json` and restored on launch; Plug never starts playing by itself.

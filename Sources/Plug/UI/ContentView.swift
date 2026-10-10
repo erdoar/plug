@@ -16,6 +16,7 @@ struct ContentView: View {
                 )) {
                     Text("Test tone (440 Hz)").tag(InputSource.testTone)
                     Text("System audio").tag(InputSource.systemAudio)
+                    Text("Apps").tag(InputSource.apps)
                 }
                 .fixedSize()
                 Spacer()
@@ -57,6 +58,40 @@ struct ContentView: View {
                 Text("While Plug runs, other apps play only through Plug. The first time, macOS asks to allow System Audio Recording. This needs the app built with scripts/bundle.sh.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+
+            if model.input == .apps {
+                HStack {
+                    Text("While Plug runs, the ticked apps play only through Plug; everything else plays normally. Apps opened later join at the next Start.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button {
+                        model.refreshAudioApps()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .help("Refresh the app list")
+                }
+                if model.audioApps.isEmpty {
+                    Text("No apps with audio found. Play something, then refresh.")
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(model.audioApps) { app in
+                    Toggle(isOn: Binding(
+                        get: { model.capturedApps.contains(app.id) },
+                        set: { model.setApp(app.id, captured: $0) }
+                    )) {
+                        HStack {
+                            Text(app.name)
+                            if app.isPlaying {
+                                Text("playing")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
             }
 
             List {
