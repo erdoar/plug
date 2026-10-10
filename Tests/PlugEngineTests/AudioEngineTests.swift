@@ -19,6 +19,8 @@ final class AudioEngineTests: XCTestCase {
 
         try await engine.setChain([first, second])
         XCTAssertEqual(engine.wiredSlotIDs, [first.id, second.id])
+        XCTAssertNotNil(engine.audioUnit(for: first.id))
+        XCTAssertNil(engine.audioUnit(for: UUID()))
 
         try await engine.setChain([second, first])
         XCTAssertEqual(engine.wiredSlotIDs, [second.id, first.id])
@@ -28,6 +30,7 @@ final class AudioEngineTests: XCTestCase {
 
         try await engine.setChain([])
         XCTAssertEqual(engine.wiredSlotIDs, [])
+        XCTAssertNil(engine.audioUnit(for: first.id))
     }
 
     /// Choosing system audio only records the choice; capture (and the

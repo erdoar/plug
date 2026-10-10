@@ -155,6 +155,12 @@ public final class AudioEngine {
         if wasRunning { try engine.start() }
     }
 
+    /// The loaded Audio Unit for a slot, for showing its controls. Nil while
+    /// it is still loading or if the slot has no effect.
+    public func audioUnit(for slotID: UUID) -> AVAudioUnit? {
+        units[slotID]
+    }
+
     /// Makes the graph match `slots`: loads Audio Units that aren't loaded
     /// yet, drops removed ones, rewires if the order changed, and applies
     /// bypass. Units already loaded are reused, so they keep their settings.
