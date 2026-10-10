@@ -18,6 +18,16 @@ final class MasterVolumeTests: XCTestCase {
         XCTAssertEqual(Set(gains).count, gains.count)
     }
 
+    func testPositionForDecibelsReversesTheTaper() {
+        for decibels in [10.0, 6, 3, 0, -3, -6, -12, -24, -48] {
+            let position = MasterVolume.position(forDecibels: decibels)
+            XCTAssertEqual(MasterVolume.decibels(forPosition: position)!, decibels, accuracy: 0.001)
+        }
+        XCTAssertEqual(MasterVolume.position(forDecibels: nil), 0)
+        XCTAssertEqual(MasterVolume.position(forDecibels: 0), MasterVolume.unityPosition)
+        XCTAssertEqual(MasterVolume.position(forDecibels: 20), 1, "capped at the top")
+    }
+
     func testLabels() {
         XCTAssertEqual(MasterVolume.label(forPosition: MasterVolume.unityPosition), "0.0 dB")
         XCTAssertEqual(MasterVolume.label(forPosition: 1), "+10.0 dB")

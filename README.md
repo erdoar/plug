@@ -35,6 +35,9 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 - `Tests/PlugCoreTests/`, `Tests/PlugRingBufferTests/`: unit tests that also run on Linux.
 - `Tests/PlugEngineTests/`: engine tests using Apple's built-in AUDelay. macOS only; they wire the graph but play no sound.
 
+## Quick volume
+Right-click Plug's Dock icon for Start/Stop and the master level in steps (+10 dB to mute). The VU meter icon in the menu bar opens a master volume slider with Start/Stop. Both move the same master as the knob and MIDI. Closing the window leaves Plug running; click the Dock icon or "Open Plug" in the menu bar to bring it back.
+
 ## Presets
 The strip at the bottom saves the whole setup (input, apps, output, effects with their settings, and the master level) as a named preset, and recalls it from the preset knob. Presets are JSON files in `~/Library/Application Support/Plug/Presets/`. The MIDI assignment isn't part of a preset; it stays with your controller.
 
