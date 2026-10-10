@@ -17,6 +17,7 @@ An Audio Unit (AU) plugin host for macOS. It sits between apps or system audio a
 - `Tests/PlugCoreTests/`, `Tests/PlugRingBufferTests/`: unit tests that also run on Linux.
 - `Tests/PlugEngineTests/`: engine tests (macOS only). They use Apple's built-in AUs and never start the engine, so they make no sound and never capture.
 - Audio path: app or system audio -> Plug's capture stage -> AU effect chain -> chosen output device. Plugin loading uses AUv3 and AudioUnit APIs only.
+- `.claude/skills/plug-build/`: the `/plug-build [branch]` command (pull, test, bundle, report), made for an Ask Claude button in Plug's menu bar. It never quits or relaunches Plug, since the button runs inside it.
 - `docs/research/`: observed behaviour notes (no code).
 - `docs/`: design notes.
 
