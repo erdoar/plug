@@ -13,6 +13,7 @@ Everything needed to put Plug on the web. All artwork is original to Plug.
 | `og-image.svg`, `og-image.png` | 1200×630 | Link preview for social posts and chats |
 | `menubar-glyph.svg` | 20×18 | The menu bar VU meter; draws in the text colour (`currentColor`) |
 | `plug.css` | | Brand colours as CSS variables, plus the manual's page style (light and dark) |
+| `index.html` | | The Plug home page: download, a working master knob, what Plug does and how to install. Self-contained apart from Google Fonts and the images here |
 | `manual.html` | | The user manual as a web page, built from `../MANUAL.md` |
 
 ## Colours
@@ -37,7 +38,11 @@ Everything needed to put Plug on the web. All artwork is original to Plug.
 <meta property="og:image" content="https://YOUR-SITE/og-image.png">
 ```
 
-Link previews need the full address of `og-image.png` on your site.
+Link previews need the full address of `og-image.png` on your site. `index.html` has the relative path; change it to the full address when you publish.
+
+## Publishing the site
+
+Upload the whole `Web/` folder to any static host. `index.html` is the home page and links to `manual.html`. Its Download buttons point to the latest GitHub release, so attach the DMG to a release and they will find it.
 
 ## Rebuilding the manual page
 
