@@ -14,6 +14,7 @@ An Audio Unit (AU) plugin host for macOS. It sits between apps or system audio a
 - `Sources/PlugEngine/`: the audio engine (AVFoundation, CoreAudio). macOS only, no UI.
 - `Sources/Plug/`: the SwiftUI app. macOS only.
 - `Tests/PlugCoreTests/`: unit tests for PlugCore.
+- `Tests/PlugEngineTests/`: engine tests (macOS only). They use Apple's built-in AUs and never start the engine, so they make no sound.
 - Audio path: app or system audio -> Plug's capture stage -> AU effect chain -> chosen output device. Plugin loading uses AUv3 and AudioUnit APIs only.
 - `docs/research/`: observed behaviour notes (no code).
 - `docs/`: design notes.
