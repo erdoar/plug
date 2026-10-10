@@ -20,7 +20,7 @@ final class SystemAudioTap {
     /// use the device Plug plays to, so the two stay in step.
     init(ring: CaptureRing, clockDeviceUID: String) throws {
         let description = CATapDescription(
-            stereoGlobalTapButExcludeProcesses: [NSNumber(value: try Self.ownProcessObject())]
+            stereoGlobalTapButExcludeProcesses: [try Self.ownProcessObject()]
         )
         description.name = "Plug"
         description.muteBehavior = .muted

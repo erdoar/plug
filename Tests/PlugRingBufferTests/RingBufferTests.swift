@@ -45,7 +45,7 @@ final class RingBufferTests: XCTestCase {
     func testMonoInputGoesToBothChannels() {
         ring = plug_ring_create(8, 1)
         let mono: [Float] = [5, 6]
-        mono.withUnsafeBufferPointer { samples in
+        _ = mono.withUnsafeBufferPointer { samples in
             plug_ring_write(ring, samples.baseAddress, samples.baseAddress, 1, 2)
         }
         let out = read(2)
