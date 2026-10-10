@@ -1,15 +1,17 @@
 import Foundation
 
-/// One effect slot in the chain. The plugin reference is filled in when a
-/// real Audio Unit is loaded; for now a slot is just a named placeholder.
+/// One effect slot in the chain. `effect` names the Audio Unit to load; a
+/// slot without one is an empty placeholder and passes audio through.
 public struct PluginSlot: Identifiable, Equatable {
     public let id: UUID
     public var name: String
+    public var effect: EffectID?
     public var isBypassed: Bool
 
-    public init(name: String, isBypassed: Bool = false) {
+    public init(name: String, effect: EffectID? = nil, isBypassed: Bool = false) {
         self.id = UUID()
         self.name = name
+        self.effect = effect
         self.isBypassed = isBypassed
     }
 }
@@ -20,6 +22,10 @@ public struct PluginChain: Equatable {
     public private(set) var slots: [PluginSlot] = []
 
     public init() {}
+
+    public func index(of id: UUID) -> Int? {
+        slots.firstIndex { $0.id == id }
+    }
 
     public mutating func append(_ slot: PluginSlot) {
         slots.append(slot)

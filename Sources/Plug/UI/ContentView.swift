@@ -10,26 +10,43 @@ struct ContentView: View {
                 Button(model.isRunning ? "Stop" : "Start") {
                     model.toggleEngine()
                 }
+                Text("Input: test tone, 440 Hz")
+                    .foregroundStyle(.secondary)
                 Spacer()
-                Button("Add slot") {
-                    model.addPlaceholderSlot()
+                Menu("Add effect") {
+                    if model.effectGroups.isEmpty {
+                        Text("No Audio Unit effects found")
+                    }
+                    ForEach(model.effectGroups) { group in
+                        Menu(group.manufacturer) {
+                            ForEach(group.effects) { effect in
+                                Button(effect.name) {
+                                    model.addEffect(effect)
+                                }
+                            }
+                        }
+                    }
                 }
+                .fixedSize()
             }
 
             List {
-                ForEach(Array(model.chain.slots.enumerated()), id: \.element.id) { index, slot in
+                ForEach(model.chain.slots) { slot in
                     HStack {
                         Text(slot.name)
                         Spacer()
                         Toggle("Bypass", isOn: Binding(
                             get: { slot.isBypassed },
-                            set: { _ in model.toggleBypass(at: index) }
+                            set: { model.setBypassed($0, slotID: slot.id) }
                         ))
-                        .labelsHidden()
+                        Button {
+                            model.removeSlot(id: slot.id)
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Remove effect")
                     }
-                }
-                .onDelete { offsets in
-                    offsets.sorted(by: >).forEach { model.removeSlot(at: $0) }
                 }
             }
 
@@ -38,6 +55,6 @@ struct ContentView: View {
             }
         }
         .padding()
-        .frame(minWidth: 420, minHeight: 300)
+        .frame(minWidth: 480, minHeight: 320)
     }
 }

@@ -11,8 +11,9 @@ var targets: [Target] = [
 
 #if os(macOS)
 targets += [
-    .target(name: "PlugEngine"),
+    .target(name: "PlugEngine", dependencies: ["PlugCore"]),
     .executableTarget(name: "Plug", dependencies: ["PlugCore", "PlugEngine"]),
+    .testTarget(name: "PlugEngineTests", dependencies: ["PlugCore", "PlugEngine"]),
 ]
 #endif
 
