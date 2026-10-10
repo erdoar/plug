@@ -16,6 +16,8 @@ struct EffectGroup: Identifiable {
 final class HostModel: ObservableObject {
     @Published private(set) var chain = PluginChain()
     @Published private(set) var isRunning = false
+    @Published private(set) var outputDevices: [OutputDevice] = []
+    @Published private(set) var selectedOutputID: UInt32?
     @Published var errorMessage: String?
     let effectGroups: [EffectGroup]
 
@@ -26,6 +28,24 @@ final class HostModel: ObservableObject {
         effectGroups = Dictionary(grouping: EffectCatalog.installedEffects(), by: \.manufacturer)
             .map { EffectGroup(manufacturer: $0.key, effects: $0.value) }
             .sorted { $0.manufacturer < $1.manufacturer }
+        // The engine starts on the system default output.
+        selectedOutputID = OutputDevices.defaultDeviceID()
+        refreshOutputDevices()
+    }
+
+    func refreshOutputDevices() {
+        outputDevices = OutputDevices.all()
+    }
+
+    func selectOutput(_ deviceID: UInt32) {
+        do {
+            try engine.setOutputDevice(deviceID)
+            selectedOutputID = deviceID
+            errorMessage = nil
+        } catch {
+            errorMessage = "Couldn't switch output: \(error.localizedDescription)"
+        }
+        isRunning = engine.isRunning
     }
 
     func addEffect(_ effect: EffectInfo) {

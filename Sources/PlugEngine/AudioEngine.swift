@@ -1,8 +1,9 @@
 import AVFoundation
 import PlugCore
 
-/// Owns the audio graph: test tone -> effect chain -> main mixer -> default
-/// output device. App and system audio capture come later.
+/// Owns the audio graph: test tone -> effect chain -> main mixer -> output
+/// device (the system default until one is chosen). App and system audio
+/// capture come later.
 @MainActor
 public final class AudioEngine {
     private let engine: AVAudioEngine
@@ -39,6 +40,22 @@ public final class AudioEngine {
 
     public func stop() {
         engine.stop()
+    }
+
+    /// Sends the output to `deviceID`, restarting the engine if it was running.
+    public func setOutputDevice(_ deviceID: UInt32) throws {
+        let wasRunning = engine.isRunning
+        if wasRunning { engine.stop() }
+        try engine.outputNode.auAudioUnit.setDeviceID(deviceID)
+        // Match the mixer's output to the new device's sample rate. The output
+        // unit maps stereo onto the device's first two channels.
+        let hardware = engine.outputNode.outputFormat(forBus: 0)
+        if hardware.sampleRate > 0,
+           let format = AVAudioFormat(standardFormatWithSampleRate: hardware.sampleRate,
+                                      channels: min(max(hardware.channelCount, 1), 2)) {
+            engine.connect(engine.mainMixerNode, to: engine.outputNode, format: format)
+        }
+        if wasRunning { try engine.start() }
     }
 
     /// Makes the graph match `slots`: loads Audio Units that aren't loaded

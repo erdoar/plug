@@ -2,7 +2,7 @@
 
 An Audio Unit plugin host for macOS. Plug sits between apps or system audio and your playback devices, loads AU effect plugins into that path, and sends the processed audio to the output device.
 
-Status: early. Plays a quiet test tone through a chain of Audio Unit effects you pick from the ones installed on your Mac. No app or system audio capture yet.
+Status: early. Plays a quiet test tone through a chain of Audio Unit effects you pick from the ones installed on your Mac, to the output device you choose. No app or system audio capture yet.
 
 See `CLAUDE.md` for the clean-room rules this project follows.
 
@@ -27,4 +27,4 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 
 ## Known limits
 - `swift run` starts the app without an `.app` bundle, so it has no `Info.plist`. macOS needs one to ask for microphone or audio-capture permission. Before audio capture is added, the build needs a step that wraps the app in a bundle.
-- Not yet done: app and system audio capture, output device choice, plugin editor windows.
+- Not yet done: app and system audio capture, plugin editor windows. The output choice is not remembered between launches.

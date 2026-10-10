@@ -37,3 +37,19 @@ final class AudioEngineTests: XCTestCase {
         XCTAssertEqual(engine.wiredSlotIDs, [])
     }
 }
+
+/// Reads real devices but plays nothing: the engine is never started.
+final class OutputDeviceTests: XCTestCase {
+    func testDefaultOutputIsListed() throws {
+        let defaultID = try XCTUnwrap(OutputDevices.defaultDeviceID(), "This Mac has no default output device")
+        XCTAssertTrue(OutputDevices.all().contains { $0.id == defaultID })
+    }
+
+    @MainActor
+    func testSwitchingToDefaultOutputSucceeds() throws {
+        let defaultID = try XCTUnwrap(OutputDevices.defaultDeviceID(), "This Mac has no default output device")
+        let engine = AudioEngine()
+        XCTAssertNoThrow(try engine.setOutputDevice(defaultID))
+        XCTAssertFalse(engine.isRunning)
+    }
+}
