@@ -26,6 +26,7 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 ## Layout
 - `Package.swift`: the package manifest.
 - `Bundle/Info.plist`: the app bundle's Info.plist template, including the permission prompts' wording.
+- `Bundle/AppIcon.iconset/`: the app icon at every macOS size. Sources and web graphics are in `Branding/`.
 - `scripts/bundle.sh`: builds `build/Plug.app` and signs it ad hoc.
 - `Sources/PlugCore/`: plain-Swift models (`PluginChain`, `EffectID`). Builds on any platform.
 - `Sources/PlugRingBuffer/`: a lock-free C ring buffer that carries captured audio to the render thread. Builds on any platform.
