@@ -11,10 +11,11 @@ An Audio Unit (AU) plugin host for macOS. It sits between apps or system audio a
 ## Layout
 - `Package.swift`: a Swift package; there is no Xcode project file.
 - `Sources/PlugCore/`: plain-Swift models. Builds on any platform, Linux included.
+- `Sources/PlugRingBuffer/`: plain-C lock-free ring buffer between the capture I/O thread and the render thread. Builds on any platform; its tests include a two-thread stress test (run it under `--sanitize=thread` after changes).
 - `Sources/PlugEngine/`: the audio engine (AVFoundation, CoreAudio). macOS only, no UI.
 - `Sources/Plug/`: the SwiftUI app. macOS only.
-- `Tests/PlugCoreTests/`: unit tests for PlugCore.
-- `Tests/PlugEngineTests/`: engine tests (macOS only). They use Apple's built-in AUs and never start the engine, so they make no sound.
+- `Tests/PlugCoreTests/`, `Tests/PlugRingBufferTests/`: unit tests that also run on Linux.
+- `Tests/PlugEngineTests/`: engine tests (macOS only). They use Apple's built-in AUs and never start the engine, so they make no sound and never capture.
 - Audio path: app or system audio -> Plug's capture stage -> AU effect chain -> chosen output device. Plugin loading uses AUv3 and AudioUnit APIs only.
 - `docs/research/`: observed behaviour notes (no code).
 - `docs/`: design notes.
@@ -25,5 +26,6 @@ An Audio Unit (AU) plugin host for macOS. It sits between apps or system audio a
 
 ## Working rules
 - Keep the audio engine independent of the UI so it can be tested without a window.
-- Real-time audio thread: no allocation, locks, or Objective-C messaging inside the render callback.
+- Real-time audio threads (the render callbacks and the capture I/O block): no allocation, locks, or Objective-C messaging.
+- System audio capture mutes other apps at the speakers while it runs (the tap's mute behaviour), so it must only run while the engine plays, and must always exclude Plug's own process.
 - Say what was tested and on what hardware. Do not claim a feature works on macOS without running it there.

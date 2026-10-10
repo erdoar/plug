@@ -30,6 +30,18 @@ final class AudioEngineTests: XCTestCase {
         XCTAssertEqual(engine.wiredSlotIDs, [])
     }
 
+    /// Choosing system audio only records the choice; capture (and the
+    /// permission prompt) starts with the engine, which this never starts.
+    @MainActor
+    func testSwitchingInputWithoutStartingDoesNotCapture() throws {
+        let engine = AudioEngine()
+        try engine.setInput(.systemAudio)
+        XCTAssertEqual(engine.input, .systemAudio)
+        XCTAssertFalse(engine.isRunning)
+        try engine.setInput(.testTone)
+        XCTAssertEqual(engine.input, .testTone)
+    }
+
     @MainActor
     func testEmptySlotsAreNotWired() async throws {
         let engine = AudioEngine()
