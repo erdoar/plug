@@ -84,6 +84,9 @@ struct ContentView: View {
                         .help("Remove effect")
                     }
                 }
+                .onMove { source, destination in
+                    model.moveSlots(from: source, to: destination)
+                }
             }
 
             if let message = model.errorMessage {
