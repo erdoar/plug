@@ -27,5 +27,5 @@ An Audio Unit (AU) plugin host for macOS. It sits between apps or system audio a
 ## Working rules
 - Keep the audio engine independent of the UI so it can be tested without a window.
 - Real-time audio threads (the render callbacks and the capture I/O block): no allocation, locks, or Objective-C messaging.
-- System audio capture mutes other apps at the speakers while it runs (the tap's mute behaviour), so it must only run while the engine plays, and must always exclude Plug's own process.
+- Capture (system audio or chosen apps) mutes the captured apps at the speakers while it runs (the tap's mute behaviour), so it must only run while the engine plays, and must always exclude Plug's own process.
 - Say what was tested and on what hardware. Do not claim a feature works on macOS without running it there.

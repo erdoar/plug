@@ -66,6 +66,20 @@ final class AudioEngineTests: XCTestCase {
         XCTAssertEqual(restoredParameter.value, changed, accuracy: 0.001)
     }
 
+    func testProcessListLeavesOutPlug() {
+        XCTAssertFalse(AudioProcesses.all().contains { $0.pid == getpid() })
+    }
+
+    @MainActor
+    func testChoosingAppsWithoutStartingDoesNotCapture() throws {
+        let engine = AudioEngine()
+        try engine.setCapturedApps(["com.example.not-running"])
+        try engine.setInput(.apps)
+        XCTAssertEqual(engine.input, .apps)
+        XCTAssertEqual(engine.capturedApps, ["com.example.not-running"])
+        XCTAssertFalse(engine.isRunning)
+    }
+
     @MainActor
     func testEmptySlotsAreNotWired() async throws {
         let engine = AudioEngine()

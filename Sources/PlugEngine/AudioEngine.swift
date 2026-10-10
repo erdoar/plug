@@ -29,6 +29,8 @@ public final class AudioEngine {
     public private(set) var wiredSlotIDs: [UUID] = []
 
     public private(set) var input: InputSource = .testTone
+    /// App keys (see `AppKey`) captured when the input is `.apps`.
+    public private(set) var capturedApps: Set<String> = []
 
     public var isRunning: Bool { engine.isRunning }
 
@@ -55,8 +57,8 @@ public final class AudioEngine {
     /// capture, which mutes other apps at the speakers until `stop()`.
     public func start() throws {
         guard !engine.isRunning else { return }
-        if input == .systemAudio {
-            try startCapture()
+        if input != .testTone {
+            try startCapture(for: input)
         }
         do {
             try engine.start()
@@ -72,8 +74,8 @@ public final class AudioEngine {
         stopCapture()
     }
 
-    /// Chooses what goes into the effect chain. System audio is captured only
-    /// while the engine runs.
+    /// Chooses what goes into the effect chain. Audio is captured only while
+    /// the engine runs.
     public func setInput(_ source: InputSource) throws {
         guard source != input else { return }
         switch source {
@@ -81,9 +83,10 @@ public final class AudioEngine {
             stopCapture()
             tone.volume = 1
             captureNode?.volume = 0
-        case .systemAudio:
+        case .systemAudio, .apps:
             if engine.isRunning {
-                try startCapture()
+                stopCapture()
+                try startCapture(for: source)
             }
             tone.volume = 0
             captureNode?.volume = 1
@@ -91,9 +94,34 @@ public final class AudioEngine {
         input = source
     }
 
-    private func startCapture() throws {
+    /// Chooses which apps the `.apps` input captures. If they are being
+    /// captured now, the capture restarts with the new set.
+    public func setCapturedApps(_ appKeys: Set<String>) throws {
+        capturedApps = appKeys
+        guard input == .apps, engine.isRunning else { return }
+        stopCapture()
+        try startCapture(for: .apps)
+    }
+
+    /// Processes are looked up when capture starts, so an app opened later
+    /// is picked up the next time capture starts (Stop and Start).
+    private func captureTarget(for source: InputSource) throws -> TapTarget {
+        guard source == .apps else {
+            return .everythingExcept([try SystemAudioTap.ownProcessObject()])
+        }
+        let processes = AudioProcesses.all()
+            .filter { capturedApps.contains($0.appKey) }
+            .map(\.objectID)
+        guard !processes.isEmpty else {
+            throw CoreAudioError(action: "capture the chosen apps: none of them is open with audio", status: noErr)
+        }
+        return .only(processes)
+    }
+
+    private func startCapture(for source: InputSource) throws {
         guard tap == nil else { return }
-        let tap = try SystemAudioTap(ring: ring, clockDeviceUID: try clockDeviceUID())
+        let tap = try SystemAudioTap(ring: ring, clockDeviceUID: try clockDeviceUID(),
+                                     target: try captureTarget(for: source))
         if captureNode == nil || captureNode?.outputFormat(forBus: 0).sampleRate != tap.sampleRate {
             let wasRunning = engine.isRunning
             if wasRunning { engine.stop() }

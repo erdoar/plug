@@ -24,11 +24,24 @@ public struct HostSettings: Codable, Equatable {
     public var input: InputSource
     public var outputDeviceUID: String?
     public var slots: [SavedSlot]
+    /// App keys (see `AppKey`) captured when the input is `.apps`.
+    public var capturedApps: [String]
 
-    public init(input: InputSource, outputDeviceUID: String?, slots: [SavedSlot]) {
+    public init(input: InputSource, outputDeviceUID: String?, slots: [SavedSlot], capturedApps: [String] = []) {
         self.input = input
         self.outputDeviceUID = outputDeviceUID
         self.slots = slots
+        self.capturedApps = capturedApps
+    }
+
+    /// Files saved before a field existed still load, with its default.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
+        input = try container.decode(InputSource.self, forKey: .input)
+        outputDeviceUID = try container.decodeIfPresent(String.self, forKey: .outputDeviceUID)
+        slots = try container.decode([SavedSlot].self, forKey: .slots)
+        capturedApps = try container.decodeIfPresent([String].self, forKey: .capturedApps) ?? []
     }
 }
 

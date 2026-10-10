@@ -29,6 +29,25 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(SettingsStore.load(from: url), settings)
     }
 
+    func testCapturedAppsRoundTrip() throws {
+        let settings = HostSettings(input: .apps, outputDeviceUID: nil, slots: [],
+                                    capturedApps: ["com.spotify.client", "com.google.Chrome"])
+        let url = directory.appendingPathComponent("settings.json")
+        try SettingsStore.save(settings, to: url)
+        XCTAssertEqual(SettingsStore.load(from: url), settings)
+    }
+
+    /// A file written before per-app capture existed still loads.
+    func testOlderFileWithoutCapturedAppsLoads() throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let url = directory.appendingPathComponent("settings.json")
+        try Data(#"{"input":"systemAudio","slots":[],"version":1}"#.utf8).write(to: url)
+        let loaded = try XCTUnwrap(SettingsStore.load(from: url))
+        XCTAssertEqual(loaded.input, .systemAudio)
+        XCTAssertNil(loaded.outputDeviceUID)
+        XCTAssertEqual(loaded.capturedApps, [])
+    }
+
     func testMissingFileLoadsAsNil() {
         XCTAssertNil(SettingsStore.load(from: directory.appendingPathComponent("absent.json")))
     }

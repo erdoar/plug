@@ -2,9 +2,18 @@ import CoreAudio
 import Foundation
 import PlugRingBuffer
 
-/// Captures everything the Mac plays, except Plug itself, through a Core
-/// Audio process tap. The tap mutes what it captures at the speakers, so the
-/// only copy heard is the one Plug plays after its effects. Captured audio
+/// What a tap captures.
+enum TapTarget {
+    /// Every process except these (always including Plug itself).
+    case everythingExcept([AudioObjectID])
+    /// Only these processes; everything else plays normally.
+    case only([AudioObjectID])
+}
+
+/// Captures audio through a Core Audio process tap: everything the Mac plays
+/// except Plug, or only chosen processes. The tap mutes what it captures at
+/// the speakers, so the only copy heard is the one Plug plays after its
+/// effects. Captured audio
 /// arrives on a Core Audio I/O thread and goes into the capture ring.
 ///
 /// Creating one starts capturing; `stop()` or deinit ends it and unmutes.
@@ -18,10 +27,14 @@ final class SystemAudioTap {
 
     /// `clockDeviceUID` is the output device whose clock the capture follows;
     /// use the device Plug plays to, so the two stay in step.
-    init(ring: CaptureRing, clockDeviceUID: String) throws {
-        let description = CATapDescription(
-            stereoGlobalTapButExcludeProcesses: [try Self.ownProcessObject()]
-        )
+    init(ring: CaptureRing, clockDeviceUID: String, target: TapTarget) throws {
+        let description: CATapDescription
+        switch target {
+        case .everythingExcept(let processes):
+            description = CATapDescription(stereoGlobalTapButExcludeProcesses: processes)
+        case .only(let processes):
+            description = CATapDescription(stereoMixdownOfProcesses: processes)
+        }
         description.name = "Plug"
         description.muteBehavior = .muted
 
@@ -119,7 +132,7 @@ final class SystemAudioTap {
 
     /// Plug's own Core Audio process object, excluded from the tap so Plug
     /// never captures (and feeds back) its own output.
-    private static func ownProcessObject() throws -> AudioObjectID {
+    static func ownProcessObject() throws -> AudioObjectID {
         var address = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyTranslatePIDToProcessObject,
                                                  mScope: kAudioObjectPropertyScopeGlobal,
                                                  mElement: kAudioObjectPropertyElementMain)
