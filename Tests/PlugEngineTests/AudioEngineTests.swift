@@ -45,6 +45,27 @@ final class AudioEngineTests: XCTestCase {
         XCTAssertEqual(engine.input, .testTone)
     }
 
+    /// Saved state carries parameter values from one unit to a fresh one.
+    @MainActor
+    func testSavedStateRestoresParameters() async throws {
+        let original = AudioEngine()
+        let slot = PluginSlot(name: "Delay", effect: Self.delay)
+        try await original.setChain([slot])
+        let unit = try XCTUnwrap(original.audioUnit(for: slot.id))
+        let parameter = try XCTUnwrap(unit.auAudioUnit.parameterTree?.allParameters.first)
+        let changed = parameter.minValue + (parameter.maxValue - parameter.minValue) * 0.37
+        parameter.value = changed
+        let state = try XCTUnwrap(original.savedState(for: slot.id))
+
+        let restored = AudioEngine()
+        let copy = PluginSlot(name: "Delay", effect: Self.delay)
+        try await restored.setChain([copy])
+        restored.restoreState(state, for: copy.id)
+        let restoredUnit = try XCTUnwrap(restored.audioUnit(for: copy.id))
+        let restoredParameter = try XCTUnwrap(restoredUnit.auAudioUnit.parameterTree?.parameter(withAddress: parameter.address))
+        XCTAssertEqual(restoredParameter.value, changed, accuracy: 0.001)
+    }
+
     @MainActor
     func testEmptySlotsAreNotWired() async throws {
         let engine = AudioEngine()

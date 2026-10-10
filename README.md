@@ -38,4 +38,4 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 - `swift run` starts the app without an `.app` bundle or `Info.plist`, so anything that needs permission must be run from `scripts/bundle.sh` instead.
 - The bundle is signed ad hoc, so macOS may ask for permission again after each rebuild.
 - System audio capture needs the bundled app and macOS's System Audio Recording permission (System Settings > Privacy & Security > Screen & System Audio Recording).
-- Not yet done: capturing single apps. Choices are not remembered between launches.
+- Not yet done: capturing single apps. Input, output and the effect chain (with each effect's settings) are saved to `~/Library/Application Support/Plug/settings.json` and restored on launch; Plug never starts playing by itself.

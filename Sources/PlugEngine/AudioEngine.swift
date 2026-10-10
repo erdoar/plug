@@ -161,6 +161,22 @@ public final class AudioEngine {
         units[slotID]
     }
 
+    /// A slot's Audio Unit state (its parameters and internal settings) as
+    /// data to save, or nil if the slot has no loaded unit.
+    public func savedState(for slotID: UUID) -> Data? {
+        guard let state = units[slotID]?.auAudioUnit.fullState else { return nil }
+        return try? PropertyListSerialization.data(fromPropertyList: state, format: .binary, options: 0)
+    }
+
+    /// Puts back state from `savedState(for:)`. Does nothing if the slot's
+    /// unit isn't loaded or the data isn't a saved state.
+    public func restoreState(_ data: Data, for slotID: UUID) {
+        guard let unit = units[slotID],
+              let state = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+        else { return }
+        unit.auAudioUnit.fullState = state
+    }
+
     /// Makes the graph match `slots`: loads Audio Units that aren't loaded
     /// yet, drops removed ones, rewires if the order changed, and applies
     /// bypass. Units already loaded are reused, so they keep their settings.
