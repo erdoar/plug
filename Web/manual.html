@@ -120,7 +120,20 @@ by name.</li>
 <li><strong>Open:</strong> a web address, file, folder or app.</li>
 <li><strong>Ask Claude:</strong> sends your prompt to Claude Code on
 this Mac and shows the reply. Install Claude Code and run
-<code>claude</code> once in Terminal to sign in first.</li>
+<code>claude</code> once in Terminal to sign in first.
+<ul>
+<li>Start the prompt with <strong>/</strong> to run a slash command or
+skill, such as <code>/run</code>.</li>
+<li><strong>Folder</strong> is where Claude starts, so it uses that
+project's commands, skills and notes. Leave it empty for your home
+folder.</li>
+<li><strong>Claude may</strong> sets what it can do there: read and
+answer only, or also edit files.</li>
+<li><strong>Also allow</strong> names commands it may run, separated by
+commas, such as <code>Bash(swift test),Bash(scripts/bundle.sh)</code>.
+Nobody is there to approve anything, so Claude is refused whatever isn't
+allowed.</li>
+</ul></li>
 </ul>
 <p>Tick <strong>Show the result in a window</strong> to see what a
 command printed. Click a button while it's still running to stop it.

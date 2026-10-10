@@ -66,6 +66,10 @@ A button can:
 - **Run shortcut:** any shortcut from the Shortcuts app, by name.
 - **Open:** a web address, file, folder or app.
 - **Ask Claude:** sends your prompt to Claude Code on this Mac and shows the reply. Install Claude Code and run `claude` once in Terminal to sign in first.
+  - Start the prompt with **/** to run a slash command or skill, such as `/run`.
+  - **Folder** is where Claude starts, so it uses that project's commands, skills and notes. Leave it empty for your home folder.
+  - **Claude may** sets what it can do there: read and answer only, or also edit files.
+  - **Also allow** names commands it may run, separated by commas, such as `Bash(swift test),Bash(scripts/bundle.sh)`. Nobody is there to approve anything, so Claude is refused whatever isn't allowed.
 
 Tick **Show the result in a window** to see what a command printed. Click a button while it's still running to stop it. Drag buttons in the list to change their order, and use **–** to remove one.
 

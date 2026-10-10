@@ -35,7 +35,14 @@ public enum QuickAction: Codable, Equatable {
     /// A web address, or the path of a file, folder or app.
     case open(target: String)
     /// A prompt for Claude Code (`claude -p`), using the person's own login.
-    case claude(prompt: String)
+    /// A prompt starting with "/" runs a slash command or skill. `folder` is
+    /// where Claude starts, which decides the project whose commands, skills
+    /// and CLAUDE.md it sees (nil is the home folder). `access` says what it
+    /// may do there without asking (nil is read and answer only), and
+    /// `allowedTools` names further tools in Claude Code's rule syntax, for
+    /// example `Bash(swift test)`. Buttons saved before these existed load
+    /// with them unset.
+    case claude(prompt: String, folder: String? = nil, access: ClaudeAccess? = nil, allowedTools: String? = nil)
 
     public enum Kind: String, CaseIterable, Identifiable {
         case plug, midi, shell, shortcut, open, claude
@@ -86,6 +93,14 @@ public enum QuickAction: Codable, Equatable {
         }
     }
 
+    /// The folder a Claude action starts in, as typed (it may start with
+    /// "~"); nil for other kinds, or to start in the home folder.
+    public var workingFolder: String? {
+        guard case let .claude(_, folder, _, _) = self,
+              let folder = folder?.trimmingCharacters(in: .whitespaces), !folder.isEmpty else { return nil }
+        return folder
+    }
+
     var showsOutputByDefault: Bool {
         kind == .claude
     }
@@ -103,11 +118,15 @@ public enum QuickAction: Codable, Equatable {
             return ["/bin/zsh", "-lc", command]
         case .shortcut(let name):
             return ["/usr/bin/shortcuts", "run", name]
-        case .claude(let prompt):
-            if let claudePath {
-                return [claudePath, "-p", prompt]
+        case let .claude(prompt, _, access, allowedTools):
+            var arguments = ["-p", prompt, "--permission-mode", (access ?? .answer).permissionMode]
+            if let tools = allowedTools?.trimmingCharacters(in: .whitespaces), !tools.isEmpty {
+                arguments += ["--allowedTools", tools]
             }
-            return ["/bin/zsh", "-lc", "claude -p \"$1\"", "plug", prompt]
+            if let claudePath {
+                return [claudePath] + arguments
+            }
+            return ["/bin/zsh", "-lc", "claude \"$@\"", "plug"] + arguments
         case .plug, .midi, .open:
             return nil
         }
@@ -133,7 +152,7 @@ public enum QuickAction: Codable, Equatable {
             return "Type the name of a shortcut."
         case .open(let target) where target.trimmingCharacters(in: .whitespaces).isEmpty:
             return "Type a web address or choose a file or app."
-        case .claude(let prompt) where prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty:
+        case .claude(let prompt, _, _, _) where prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty:
             return "Type a prompt for Claude."
         case .plug(.recallPreset(let name)) where name.isEmpty:
             return "Choose a preset."
@@ -141,6 +160,32 @@ public enum QuickAction: Codable, Equatable {
             return "Choose an effect."
         default:
             return nil
+        }
+    }
+}
+
+/// What Claude may do without asking when a button runs it. Nobody is there
+/// to approve anything, so whatever needs approval is refused. Tools named in
+/// the button's allowed tools are allowed on top of this.
+public enum ClaudeAccess: String, Codable, CaseIterable, Identifiable {
+    /// Read files in the folder and answer.
+    case answer
+    /// Also edit files in the folder and run common file commands.
+    case edit
+    public var id: String { rawValue }
+
+    public var label: String {
+        switch self {
+        case .answer: return "Read and answer only"
+        case .edit: return "Also edit files in the folder"
+        }
+    }
+
+    /// The value for Claude Code's `--permission-mode`.
+    public var permissionMode: String {
+        switch self {
+        case .answer: return "dontAsk"
+        case .edit: return "acceptEdits"
         }
     }
 }

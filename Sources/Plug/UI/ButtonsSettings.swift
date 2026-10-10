@@ -215,15 +215,42 @@ private struct ActionFields: View {
                     }
                 }
             }
-        case .claude(let prompt):
+        case let .claude(prompt, folder, access, allowedTools):
             VStack(alignment: .leading, spacing: 4) {
                 Text("Prompt")
-                TextEditor(text: Binding(get: { prompt }, set: { action = .claude(prompt: $0) }))
+                TextEditor(text: Binding(get: { prompt },
+                                         set: { action = .claude(prompt: $0, folder: folder, access: access, allowedTools: allowedTools) }))
                     .frame(minHeight: 90)
-                Text("Runs Claude Code on this Mac with your own sign-in. Install it and run `claude` once in Terminal first.")
+                Text("Runs Claude Code on this Mac with your own sign-in. Start with / to run a slash command or skill, like /run.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            HStack {
+                TextField("Folder", text: Binding(get: { folder ?? "" },
+                                                  set: { action = .claude(prompt: prompt, folder: $0, access: access, allowedTools: allowedTools) }),
+                          prompt: Text("Home folder"))
+                Button("Choose…") {
+                    let panel = NSOpenPanel()
+                    panel.canChooseDirectories = true
+                    panel.canChooseFiles = false
+                    if panel.runModal() == .OK, let url = panel.url {
+                        action = .claude(prompt: prompt, folder: url.path, access: access, allowedTools: allowedTools)
+                    }
+                }
+            }
+            Text("Claude starts here, so it uses this project's commands, skills and CLAUDE.md.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Picker("Claude may", selection: Binding(get: { access ?? .answer },
+                                                    set: { action = .claude(prompt: prompt, folder: folder, access: $0, allowedTools: allowedTools) })) {
+                ForEach(ClaudeAccess.allCases) { Text($0.label).tag($0) }
+            }
+            TextField("Also allow", text: Binding(get: { allowedTools ?? "" },
+                                                  set: { action = .claude(prompt: prompt, folder: folder, access: access, allowedTools: $0) }),
+                      prompt: Text("e.g. Bash(swift test),Bash(scripts/bundle.sh)"))
+            Text("Nobody is there to approve anything, so Claude is refused whatever this doesn't allow. Name commands it may run, separated by commas.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 }
