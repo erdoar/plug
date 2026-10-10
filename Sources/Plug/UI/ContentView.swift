@@ -3,57 +3,32 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var model: HostModel
+    /// Whether the drawer below the board is open; remembered between launches.
+    @AppStorage("drawerOpen") private var isDrawerOpen = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Button(model.isRunning ? "Stop" : "Start") {
-                    model.toggleEngine()
-                }
-                Picker("Input", selection: Binding(
-                    get: { model.input },
-                    set: { model.selectInput($0) }
-                )) {
-                    Text("Test tone (440 Hz)").tag(InputSource.testTone)
-                    Text("System audio").tag(InputSource.systemAudio)
-                    Text("Apps").tag(InputSource.apps)
-                }
-                .fixedSize()
-                Spacer()
-                Menu("Add effect") {
-                    if model.effectGroups.isEmpty {
-                        Text("No Audio Unit effects found")
-                    }
-                    ForEach(model.effectGroups) { group in
-                        Menu(group.manufacturer) {
-                            ForEach(group.effects) { effect in
-                                Button(effect.name) {
-                                    model.addEffect(effect)
-                                }
-                            }
-                        }
-                    }
-                }
-                .fixedSize()
+            topPanel
+
+            if isDrawerOpen {
+                drawer
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
 
-            HStack {
-                Picker("Output", selection: Binding(
-                    get: { model.selectedOutputID ?? 0 },
-                    set: { model.selectOutput($0) }
-                )) {
-                    ForEach(model.outputDevices) { device in
-                        Text(device.name).tag(device.id)
-                    }
-                }
-                Button {
-                    model.refreshOutputDevices()
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                }
-                .help("Refresh the device list")
+            if let message = model.errorMessage {
+                Text(message).foregroundStyle(.red)
             }
+        }
+        .padding()
+        .frame(minWidth: 760)
+    }
 
+    // MARK: - Drawer
+
+    /// Everything below the board: capture notes, the app list and the
+    /// effect chain. The window grows and shrinks with it.
+    private var drawer: some View {
+        VStack(alignment: .leading, spacing: 12) {
             if model.input == .systemAudio {
                 Text("While Plug runs, other apps play only through Plug. The first time, macOS asks to allow System Audio Recording. This needs the app built with scripts/bundle.sh.")
                     .font(.caption)
@@ -123,12 +98,117 @@ struct ContentView: View {
                     model.moveSlots(from: source, to: destination)
                 }
             }
+            .frame(minHeight: 240)
 
-            if let message = model.errorMessage {
-                Text(message).foregroundStyle(.red)
+        }
+    }
+
+    // MARK: - Top panel
+
+    private static let inputChoices: [(value: InputSource, label: String)] = [
+        (.testTone, "Test tone"),
+        (.systemAudio, "System audio"),
+        (.apps, "Apps"),
+    ]
+
+    private var topPanel: some View {
+        VStack(spacing: 6) {
+            HStack(alignment: .center, spacing: 20) {
+                LampButton(title: "START", color: Color(red: 0.13, green: 0.66, blue: 0.24), isLit: model.isRunning) {
+                    if !model.isRunning { model.toggleEngine() }
+                }
+                LampButton(title: "STOP", color: Color(red: 0.82, green: 0.12, blue: 0.08), isLit: !model.isRunning) {
+                    if model.isRunning { model.toggleEngine() }
+                }
+                Spacer(minLength: 12)
+                inputDial
+                outputDial
+                addDial
+            }
+            DrawerHandle(isOpen: isDrawerOpen) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isDrawerOpen.toggle()
+                }
             }
         }
-        .padding()
-        .frame(minWidth: 480, minHeight: 320)
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
+        .background(PineBoard())
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
+    }
+
+    private var inputDial: some View {
+        let choices = Self.inputChoices
+        let index = choices.firstIndex { $0.value == model.input }
+        return RadioDial(title: "INPUT",
+                         reading: index.map { choices[$0].label } ?? "",
+                         position: dialPosition(of: index, count: choices.count)) { close in
+            DialChoices(options: choices, selection: model.input) { source in
+                model.selectInput(source)
+                close()
+            }
+            .padding(14)
+            .frame(minWidth: 200)
+        }
+    }
+
+    private var outputDial: some View {
+        let devices = model.outputDevices
+        let index = devices.firstIndex { $0.id == model.selectedOutputID }
+        return RadioDial(title: "OUTPUT",
+                         reading: index.map { devices[$0].name } ?? "No device",
+                         position: dialPosition(of: index, count: devices.count)) { close in
+            VStack(alignment: .leading, spacing: 10) {
+                ScrollView {
+                    DialChoices(options: devices.map { (value: $0.id, label: $0.name) },
+                                selection: model.selectedOutputID) { deviceID in
+                        model.selectOutput(deviceID)
+                        close()
+                    }
+                }
+                .frame(maxHeight: 320)
+                Divider()
+                Button("Refresh devices") {
+                    model.refreshOutputDevices()
+                }
+            }
+            .padding(14)
+            .frame(minWidth: 240)
+        }
+    }
+
+    private var addDial: some View {
+        RadioDial(title: "ADD",
+                  reading: model.chain.slots.isEmpty ? "Add an effect" : "\(model.chain.slots.count) in chain",
+                  position: dialPosition(of: min(model.chain.slots.count, 6), count: 7)) { close in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    if model.effectGroups.isEmpty {
+                        Text("No Audio Unit effects found")
+                            .foregroundStyle(.secondary)
+                    }
+                    ForEach(model.effectGroups) { group in
+                        Text(group.manufacturer)
+                            .font(.headline)
+                        ForEach(group.effects) { effect in
+                            Button {
+                                model.addEffect(effect)
+                                close()
+                            } label: {
+                                Text(effect.name)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.leading, 10)
+                        }
+                    }
+                }
+                .padding(14)
+            }
+            .frame(minWidth: 260, maxHeight: 420)
+        }
     }
 }

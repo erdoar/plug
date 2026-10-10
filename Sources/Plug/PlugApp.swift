@@ -10,6 +10,8 @@ struct PlugApp: App {
         WindowGroup("Plug") {
             ContentView(model: model)
         }
+        // The window follows the content, so it grows and shrinks with the drawer.
+        .windowResizability(.contentSize)
     }
 }
 
