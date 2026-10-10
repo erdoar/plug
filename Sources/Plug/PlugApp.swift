@@ -12,6 +12,22 @@ struct PlugApp: App {
         }
         // The window follows the content, so it grows and shrinks with the drawer.
         .windowResizability(.contentSize)
+        .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About Plug") {
+                    HelpAndUpdates.showAbout()
+                }
+                Button("Check for Updates…") {
+                    HelpAndUpdates.checkForUpdates()
+                }
+            }
+            CommandGroup(replacing: .help) {
+                Button("Plug Help") {
+                    HelpAndUpdates.openManual()
+                }
+                .keyboardShortcut("?", modifiers: .command)
+            }
+        }
 
         MenuBarExtra {
             MenuBarVolume(model: appDelegate.model)
