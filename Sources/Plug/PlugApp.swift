@@ -16,7 +16,7 @@ struct PlugApp: App {
         MenuBarExtra {
             MenuBarVolume(model: appDelegate.model)
         } label: {
-            Image(systemName: "gauge.with.needle")
+            Image(nsImage: MenuBarIcon.image)
         }
         .menuBarExtraStyle(.window)
     }
