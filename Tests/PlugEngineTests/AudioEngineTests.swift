@@ -81,6 +81,19 @@ final class AudioEngineTests: XCTestCase {
     }
 
     @MainActor
+    func testMasterGainIsClampedToUnity() {
+        let engine = AudioEngine()
+        engine.masterGain = 0.25
+        XCTAssertEqual(engine.masterGain, 0.25, accuracy: 0.0001)
+        engine.masterGain = 3
+        XCTAssertEqual(engine.masterGain, 1, accuracy: 0.0001)
+    }
+
+    func testMIDIInputStarts() throws {
+        XCTAssertNoThrow(try MIDIInput())
+    }
+
+    @MainActor
     func testEmptySlotsAreNotWired() async throws {
         let engine = AudioEngine()
         try await engine.setChain([PluginSlot(name: "Empty")])

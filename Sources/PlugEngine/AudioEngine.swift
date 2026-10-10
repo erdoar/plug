@@ -34,6 +34,12 @@ public final class AudioEngine {
 
     public var isRunning: Bool { engine.isRunning }
 
+    /// The master level after the whole effect chain, 0 (silent) to 1 (unity).
+    public var masterGain: Float {
+        get { engine.mainMixerNode.outputVolume }
+        set { engine.mainMixerNode.outputVolume = min(max(newValue, 0), 1) }
+    }
+
     public init() {
         let engine = AVAudioEngine()
         let outputRate = engine.outputNode.outputFormat(forBus: 0).sampleRate

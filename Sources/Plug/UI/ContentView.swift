@@ -20,7 +20,7 @@ struct ContentView: View {
             }
         }
         .padding()
-        .frame(minWidth: 760)
+        .frame(minWidth: 900)
     }
 
     // MARK: - Drawer
@@ -120,6 +120,7 @@ struct ContentView: View {
                 LampButton(title: "STOP", color: Color(red: 0.82, green: 0.12, blue: 0.08), isLit: !model.isRunning) {
                     if model.isRunning { model.toggleEngine() }
                 }
+                MasterKnob(model: model)
                 Spacer(minLength: 12)
                 inputDial
                 outputDial

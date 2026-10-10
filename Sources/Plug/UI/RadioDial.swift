@@ -111,31 +111,35 @@ struct TuningScale: View {
 /// A knurled brown bakelite knob with a white pointer.
 struct DialKnob: View {
     let angle: Angle
+    var size: CGFloat = 62
+    /// Off while the knob is being dragged, so it follows the hand exactly.
+    var animated = true
 
     var body: some View {
+        let scale = size / 62
         ZStack {
             Circle()
                 .fill(RadialGradient(colors: [Color(red: 0.40, green: 0.22, blue: 0.11), Color(red: 0.12, green: 0.06, blue: 0.03)],
-                                     center: UnitPoint(x: 0.35, y: 0.3), startRadius: 1, endRadius: 42))
+                                     center: UnitPoint(x: 0.35, y: 0.3), startRadius: 1, endRadius: 42 * scale))
             ForEach(0..<40, id: \.self) { ridge in
                 Capsule()
                     .fill(Color.black.opacity(0.4))
-                    .frame(width: 2, height: 6)
-                    .offset(y: -27)
+                    .frame(width: 2 * scale, height: 6 * scale)
+                    .offset(y: -27 * scale)
                     .rotationEffect(.degrees(Double(ridge) * 9))
             }
             Circle()
-                .inset(by: 10)
+                .inset(by: 10 * scale)
                 .fill(RadialGradient(colors: [Color(red: 0.47, green: 0.27, blue: 0.14), Color(red: 0.2, green: 0.1, blue: 0.05)],
-                                     center: UnitPoint(x: 0.4, y: 0.35), startRadius: 1, endRadius: 30))
+                                     center: UnitPoint(x: 0.4, y: 0.35), startRadius: 1, endRadius: 30 * scale))
             Capsule()
                 .fill(Color(white: 0.95))
-                .frame(width: 3, height: 15)
-                .offset(y: -12)
+                .frame(width: 3 * scale, height: 15 * scale)
+                .offset(y: -12 * scale)
                 .rotationEffect(angle)
         }
-        .frame(width: 62, height: 62)
+        .frame(width: size, height: size)
         .shadow(color: .black.opacity(0.5), radius: 3, y: 2)
-        .animation(.spring(duration: 0.4), value: angle)
+        .animation(animated ? .spring(duration: 0.4) : nil, value: angle)
     }
 }
