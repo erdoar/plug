@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 
 /// App state shared by the UI. Holds the chain and the engine.
