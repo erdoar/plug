@@ -31,6 +31,10 @@ mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp "$bin_dir/Plug" "$app/Contents/MacOS/Plug"
 sed "s/BUNDLE_ID/$bundle_id/" Bundle/Info.plist > "$app/Contents/Info.plist"
 iconutil -c icns Bundle/AppIcon.iconset -o "$app/Contents/Resources/AppIcon.icns"
+# The manual, for Help > Plug Help (works offline).
+mkdir -p "$app/Contents/Resources/Manual"
+cp Web/manual.html Web/plug.css Web/logo.png Web/favicon.svg Web/favicon-32.png Web/apple-touch-icon.png \
+   "$app/Contents/Resources/Manual/"
 plutil -lint "$app/Contents/Info.plist" >/dev/null
 
 # Ad-hoc signature: enough to run locally. macOS keys permissions to the

@@ -15,8 +15,9 @@ Plug is an Audio Unit host for your Mac. It takes the sound your Mac plays (ever
 9. [MIDI control](#midi-control)
 10. [Presets](#presets)
 11. [Dock menu and menu bar](#dock-menu-and-menu-bar)
-12. [Where Plug keeps things](#where-plug-keeps-things)
-13. [Troubleshooting](#troubleshooting)
+12. [Help, About and updates](#help-about-and-updates)
+13. [Where Plug keeps things](#where-plug-keeps-things)
+14. [Troubleshooting](#troubleshooting)
 
 ## What you need
 
@@ -199,6 +200,14 @@ The MIDI link isn't part of presets. It stays with your controller.
 The Dock menu, the menu bar, the on-screen knob and your MIDI control all move the same master, so they always agree.
 
 Closing the window doesn't stop Plug, which keeps playing. Click the Dock icon or choose **Open Plug** to bring the window back. Quit Plug to stop completely.
+
+## Help, About and updates
+
+- **Help > Plug Help** (Cmd+?) opens this manual in your browser. It's built into Plug.app, so it works offline.
+- **Plug > About Plug** shows Plug's version.
+- **Plug > Check for Updates…** asks Plug's GitHub page for the latest release. If a newer one exists, Plug offers to open its download page. If you build Plug yourself, update by running `git pull`, then `scripts/bundle.sh`.
+
+Checking for updates needs an internet connection. It reads only the public release information and sends nothing about you or your setup.
 
 ## Where Plug keeps things
 

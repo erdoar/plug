@@ -40,6 +40,12 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 ## Quick volume
 Right-click Plug's Dock icon for Start/Stop and the master level in steps (+10 dB to mute). The VU meter icon in the menu bar opens a master volume slider with Start/Stop. Both move the same master as the knob and MIDI. Closing the window leaves Plug running; click the Dock icon or "Open Plug" in the menu bar to bring it back.
 
+## Releasing
+"Check for Updates" compares the app's version with the newest GitHub release. To publish one:
+1. Raise `CFBundleShortVersionString` in `Bundle/Info.plist` (e.g. `0.2.0`) and merge.
+2. Run `scripts/bundle.sh`, then `ditto -c -k --keepParent build/Plug.app Plug-0.2.0.zip`.
+3. On GitHub, create a release tagged `v0.2.0` and attach the zip.
+
 ## Presets
 The strip at the bottom saves the whole setup (input, apps, output, effects with their settings, and the master level) as a named preset, and recalls it from the preset knob. Presets are JSON files in `~/Library/Application Support/Plug/Presets/`. The MIDI assignment isn't part of a preset; it stays with your controller.
 
