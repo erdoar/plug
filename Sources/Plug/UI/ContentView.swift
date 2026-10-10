@@ -19,7 +19,7 @@ struct ContentView: View {
                 Text(message).foregroundStyle(.red)
             }
 
-            PresetBar(model: model)
+            PresetBar(model: model, isDrawerOpen: $isDrawerOpen)
         }
         .padding()
         .frame(minWidth: 900)
@@ -114,29 +114,21 @@ struct ContentView: View {
     ]
 
     private var topPanel: some View {
-        VStack(spacing: 6) {
-            HStack(alignment: .center, spacing: 20) {
-                LampButton(title: "START", color: Color(red: 0.13, green: 0.66, blue: 0.24), isLit: model.isRunning) {
-                    if !model.isRunning { model.toggleEngine() }
-                }
-                LampButton(title: "STOP", color: Color(red: 0.82, green: 0.12, blue: 0.08), isLit: !model.isRunning) {
-                    if model.isRunning { model.toggleEngine() }
-                }
-                MasterKnob(model: model)
-                Spacer(minLength: 12)
-                inputDial
-                outputDial
-                addDial
+        HStack(alignment: .center, spacing: 20) {
+            LampButton(title: "START", color: Color(red: 0.13, green: 0.66, blue: 0.24), isLit: model.isRunning) {
+                if !model.isRunning { model.toggleEngine() }
             }
-            DrawerHandle(isOpen: isDrawerOpen) {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isDrawerOpen.toggle()
-                }
+            LampButton(title: "STOP", color: Color(red: 0.82, green: 0.12, blue: 0.08), isLit: !model.isRunning) {
+                if model.isRunning { model.toggleEngine() }
             }
+            MasterKnob(model: model)
+            Spacer(minLength: 12)
+            inputDial
+            outputDial
+            addDial
         }
         .padding(.horizontal, 24)
-        .padding(.top, 16)
-        .padding(.bottom, 8)
+        .padding(.vertical, 16)
         .background(PineBoard())
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .shadow(color: .black.opacity(0.35), radius: 6, y: 3)

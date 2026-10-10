@@ -2,9 +2,11 @@ import SwiftUI
 
 /// The strip of pine at the bottom of the window: the current preset on a
 /// tuning scale, a small knob that opens the preset list (recall or delete),
-/// and a brass plate to save the current setup as a preset.
+/// the drawer handle, and a brass plate to save the current setup as a
+/// preset.
 struct PresetBar: View {
     @ObservedObject var model: HostModel
+    @Binding var isDrawerOpen: Bool
     @State private var isListOpen = false
     @State private var isNaming = false
     @State private var newName = ""
@@ -27,6 +29,11 @@ struct PresetBar: View {
             .accessibilityLabel("Presets")
             .popover(isPresented: $isListOpen, arrowEdge: .top) {
                 presetList(names)
+            }
+            DrawerHandle(isOpen: isDrawerOpen) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isDrawerOpen.toggle()
+                }
             }
             Button {
                 newName = model.currentPreset ?? ""
