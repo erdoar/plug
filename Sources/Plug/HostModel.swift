@@ -351,6 +351,14 @@ final class HostModel: ObservableObject {
         syncEngine()
     }
 
+    /// Bypasses the first effect with this name, or brings it back. False if
+    /// there is no such effect.
+    func toggleBypass(effectNamed name: String) -> Bool {
+        guard let slot = chain.slots.first(where: { $0.name == name }) else { return false }
+        setBypassed(!slot.isBypassed, slotID: slot.id)
+        return true
+    }
+
     func toggleEngine() {
         do {
             if engine.isRunning {

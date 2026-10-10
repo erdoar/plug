@@ -99,6 +99,12 @@ final class AudioEngineTests: XCTestCase {
         XCTAssertNoThrow(try MIDIInput())
     }
 
+    /// Opens the output port and lists outputs; sends nothing.
+    func testMIDIOutputStarts() throws {
+        XCTAssertNoThrow(try MIDIOutput())
+        _ = MIDIOutput.destinationNames()
+    }
+
     @MainActor
     func testEmptySlotsAreNotWired() async throws {
         let engine = AudioEngine()

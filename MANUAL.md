@@ -50,6 +50,25 @@ The worn handle in the bottom strip opens and closes the drawer.
 
 Right-click **MIDI LEARN** to forget the control.
 
+## Buttons
+
+Add your own buttons to the menu bar panel. Each one does a single thing when you click it.
+
+1. Click the VU meter in the menu bar, then **Add Buttons…** (or choose **Plug > Settings…**).
+2. Click **+** and pick what the button does. Give it a name and an icon.
+3. Click **Try It** to test it. Every change is saved as you make it.
+
+A button can:
+
+- **Plug control:** Start or Stop, recall a preset, set the master level, or bypass an effect.
+- **Send MIDI:** a control change, note or program change, to one MIDI output or all of them. To reach another app on this Mac, turn on the IAC Driver in Audio MIDI Setup.
+- **Run command:** a Terminal command, run from your home folder.
+- **Run shortcut:** any shortcut from the Shortcuts app, by name.
+- **Open:** a web address, file, folder or app.
+- **Ask Claude:** sends your prompt to Claude Code on this Mac and shows the reply. Install Claude Code and run `claude` once in Terminal to sign in first.
+
+Tick **Show the result in a window** to see what a command printed. Click a button while it's still running to stop it. Drag buttons in the list to change their order, and use **–** to remove one.
+
 ## Presets
 
 - **SAVE** stores everything: input, apps, output, effects with their settings, and the master level.
@@ -58,7 +77,7 @@ Right-click **MIDI LEARN** to forget the control.
 ## Quick controls
 
 - **Dock icon, right-click:** Start or Stop, and set the master level.
-- **VU meter in the menu bar:** a master volume slider, Start or Stop, Open Plug, and Quit.
+- **VU meter in the menu bar:** a master volume slider, your buttons, Start or Stop, Open Plug, and Quit.
 
 Closing the window keeps Plug playing. Quit Plug to stop it completely.
 

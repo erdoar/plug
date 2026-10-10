@@ -40,6 +40,9 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 ## Quick volume
 Right-click Plug's Dock icon for Start/Stop and the master level in steps (+10 dB to mute). The VU meter icon in the menu bar opens a master volume slider with Start/Stop. Both move the same master as the knob and MIDI. Closing the window leaves Plug running; click the Dock icon or "Open Plug" in the menu bar to bring it back.
 
+## Buttons
+People add their own buttons to the menu bar panel in Plug > Settings… (or "Edit Buttons…" in the panel). A button can control Plug (Start/Stop, recall a preset, set the master level, bypass an effect), send a MIDI control change, note or program change to any MIDI output, run a zsh command, run a Shortcut, open a link, file or app, or ask Claude through Claude Code (`claude -p`, with the person's own sign-in; Plug stores no key). Commands run from the home folder; their output, or Claude's reply, can open in a window. Clicking a running button stops it. Buttons are saved in `~/Library/Application Support/Plug/buttons.json`, apart from presets. The format and the MIDI words are in `PlugCore/QuickButtons.swift`; `PlugEngine/MIDIOutput.swift` sends MIDI.
+
 ## Releasing
 "Check for Updates" compares the app's version with the newest GitHub release. To publish one:
 1. Raise `CFBundleShortVersionString` in `Bundle/Info.plist` (e.g. `0.2.0`) and merge.
@@ -52,7 +55,7 @@ The app is signed ad hoc, not notarized, so the first time people open it they r
 The strip at the bottom saves the whole setup (input, apps, output, effects with their settings, and the master level) as a named preset, and recalls it from the preset knob. Presets are JSON files in `~/Library/Application Support/Plug/Presets/`. The MIDI assignment isn't part of a preset; it stays with your controller.
 
 ## Known limits
-- The master knob sits after the effect chain and goes from silence to +10 dB; 0 dB is at 80% of the turn, marked by the bent tack (click the tack to return there). Boosted audio that goes over full scale clips at the output. MIDI Learn binds it to one control change (channel and controller) from any MIDI source; MIDI is receive-only, so motorised faders aren't moved to match.
+- The master knob sits after the effect chain and goes from silence to +10 dB; 0 dB is at 80% of the turn, marked by the bent tack (click the tack to return there). Boosted audio that goes over full scale clips at the output. MIDI Learn binds it to one control change (channel and controller) from any MIDI source; MIDI in is only for the master knob, and motorised faders aren't moved to match; MIDI out is only for buttons.
 - `swift run` starts the app without an `.app` bundle or `Info.plist`, so anything that needs permission must be run from `scripts/bundle.sh` instead.
 - The bundle is signed ad hoc, so macOS may ask for permission again after each rebuild.
 - System audio capture needs the bundled app and macOS's System Audio Recording permission (System Settings > Privacy & Security > Screen & System Audio Recording).
