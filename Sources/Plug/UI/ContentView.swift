@@ -69,6 +69,13 @@ struct ContentView: View {
                             set: { model.setBypassed($0, slotID: slot.id) }
                         ))
                         Button {
+                            model.openControls(slotID: slot.id)
+                        } label: {
+                            Image(systemName: "slider.horizontal.3")
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Show the effect's controls")
+                        Button {
                             model.removeSlot(id: slot.id)
                         } label: {
                             Image(systemName: "trash")

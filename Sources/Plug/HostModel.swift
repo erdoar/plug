@@ -23,6 +23,7 @@ final class HostModel: ObservableObject {
     let effectGroups: [EffectGroup]
 
     private let engine: AudioEngine
+    private let pluginWindows = PluginWindows()
 
     init() {
         engine = AudioEngine()
@@ -68,7 +69,20 @@ final class HostModel: ObservableObject {
     func removeSlot(id: UUID) {
         guard let index = chain.index(of: id) else { return }
         chain.remove(at: index)
+        pluginWindows.close(slotID: id)
         syncEngine()
+    }
+
+    func openControls(slotID: UUID) {
+        guard let index = chain.index(of: slotID),
+              let unit = engine.audioUnit(for: slotID) else {
+            errorMessage = "That effect hasn't finished loading yet."
+            return
+        }
+        let title = chain.slots[index].name
+        Task {
+            await pluginWindows.open(unit, title: title, slotID: slotID)
+        }
     }
 
     func setBypassed(_ bypassed: Bool, slotID: UUID) {

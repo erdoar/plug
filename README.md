@@ -30,7 +30,7 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 - `Sources/PlugCore/`: plain-Swift models (`PluginChain`, `EffectID`). Builds on any platform.
 - `Sources/PlugRingBuffer/`: a lock-free C ring buffer that carries captured audio to the render thread. Builds on any platform.
 - `Sources/PlugEngine/`: the audio engine. `AudioEngine` wires input (test tone or system audio) -> effects -> output; `SystemAudioTap` captures system audio through a Core Audio process tap; `EffectCatalog` lists installed AU effects. macOS only, no UI.
-- `Sources/Plug/`: the SwiftUI app (`PlugApp`, `HostModel`, `UI/`). macOS only.
+- `Sources/Plug/`: the SwiftUI app (`PlugApp`, `HostModel`, `PluginWindows` for effect controls, `UI/`). macOS only.
 - `Tests/PlugCoreTests/`, `Tests/PlugRingBufferTests/`: unit tests that also run on Linux.
 - `Tests/PlugEngineTests/`: engine tests using Apple's built-in AUDelay. macOS only; they wire the graph but play no sound.
 
@@ -38,4 +38,4 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 - `swift run` starts the app without an `.app` bundle or `Info.plist`, so anything that needs permission must be run from `scripts/bundle.sh` instead.
 - The bundle is signed ad hoc, so macOS may ask for permission again after each rebuild.
 - System audio capture needs the bundled app and macOS's System Audio Recording permission (System Settings > Privacy & Security > Screen & System Audio Recording).
-- Not yet done: capturing single apps, plugin editor windows. Choices are not remembered between launches.
+- Not yet done: capturing single apps. Choices are not remembered between launches.
