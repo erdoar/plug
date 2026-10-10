@@ -18,6 +18,7 @@ final class HostModel: ObservableObject {
     @Published private(set) var isRunning = false
     @Published private(set) var outputDevices: [OutputDevice] = []
     @Published private(set) var selectedOutputID: UInt32?
+    @Published private(set) var input: InputSource = .testTone
     @Published var errorMessage: String?
     let effectGroups: [EffectGroup]
 
@@ -35,6 +36,17 @@ final class HostModel: ObservableObject {
 
     func refreshOutputDevices() {
         outputDevices = OutputDevices.all()
+    }
+
+    func selectInput(_ source: InputSource) {
+        do {
+            try engine.setInput(source)
+            input = source
+            errorMessage = nil
+        } catch {
+            errorMessage = "Couldn't switch input: \(error.localizedDescription)"
+        }
+        isRunning = engine.isRunning
     }
 
     func selectOutput(_ deviceID: UInt32) {
