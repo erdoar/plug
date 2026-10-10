@@ -17,6 +17,37 @@ final class PluginChainTests: XCTestCase {
         XCTAssertEqual(chain.slots.map(\.name), ["B", "C", "A"])
     }
 
+    private func chain(_ names: [String]) -> PluginChain {
+        var chain = PluginChain()
+        names.forEach { chain.append(PluginSlot(name: $0)) }
+        return chain
+    }
+
+    func testMoveOffsetsUpAndDown() {
+        var down = chain(["A", "B", "C", "D"])
+        down.move(fromOffsets: [0], toOffset: 3)
+        XCTAssertEqual(down.slots.map(\.name), ["B", "C", "A", "D"])
+
+        var up = chain(["A", "B", "C", "D"])
+        up.move(fromOffsets: [3], toOffset: 0)
+        XCTAssertEqual(up.slots.map(\.name), ["D", "A", "B", "C"])
+    }
+
+    func testMoveSeveralKeepsTheirOrder() {
+        var several = chain(["A", "B", "C", "D"])
+        several.move(fromOffsets: [0, 2], toOffset: 4)
+        XCTAssertEqual(several.slots.map(\.name), ["B", "D", "A", "C"])
+    }
+
+    func testMoveOntoItselfOrOutOfRangeChangesNothing() {
+        var same = chain(["A", "B", "C"])
+        same.move(fromOffsets: [1], toOffset: 1)
+        same.move(fromOffsets: [1], toOffset: 2)
+        same.move(fromOffsets: [7], toOffset: 0)
+        same.move(fromOffsets: [0], toOffset: 9)
+        XCTAssertEqual(same.slots.map(\.name), ["A", "B", "C"])
+    }
+
     func testBypassIsPerSlot() {
         var chain = PluginChain()
         chain.append(PluginSlot(name: "A"))

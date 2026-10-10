@@ -43,6 +43,20 @@ public struct PluginChain: Equatable {
         slots.insert(slot, at: target)
     }
 
+    /// Moves the slots at `source` so they sit before the slot that is
+    /// currently at `destination` (or at the end when it equals the count),
+    /// keeping their order. The same convention as SwiftUI's list `onMove`.
+    public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
+        let moving = source.filter { slots.indices.contains($0) }
+        guard !moving.isEmpty, (0...slots.count).contains(destination) else { return }
+        let moved = moving.map { slots[$0] }
+        let shift = moving.filter { $0 < destination }.count
+        for index in moving.reversed() {
+            slots.remove(at: index)
+        }
+        slots.insert(contentsOf: moved, at: destination - shift)
+    }
+
     public mutating func setBypassed(_ bypassed: Bool, at index: Int) {
         guard slots.indices.contains(index) else { return }
         slots[index].isBypassed = bypassed

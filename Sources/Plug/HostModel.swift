@@ -134,6 +134,11 @@ final class HostModel: ObservableObject {
         syncEngine()
     }
 
+    func moveSlots(from source: IndexSet, to destination: Int) {
+        chain.move(fromOffsets: source, toOffset: destination)
+        syncEngine()
+    }
+
     func openControls(slotID: UUID) {
         guard let index = chain.index(of: slotID),
               let unit = engine.audioUnit(for: slotID) else {
