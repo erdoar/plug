@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18" fill="none" stroke="currentColor" stroke-linecap="round">
+  <!-- Plug's menu bar VU meter: scale arc, three ticks, needle, pivot. Uses currentColor. -->
+  <path d="M2.94 10.24 A8 8 0 0 1 17.06 10.24" stroke-width="2.6"/>
+  <path d="M3.84 6.12 L2.61 4.54 M10 4 L10 2 M16.16 6.12 L17.39 4.54" stroke-width="1.8"/>
+  <path d="M10 14 L14.5 6.21" stroke-width="2.4"/>
+  <circle cx="10" cy="14" r="2.4" fill="currentColor" stroke="none"/>
+</svg>

@@ -6,6 +6,8 @@ Status: early. Captures everything the Mac plays, or just the apps you pick (or 
 
 See `CLAUDE.md` for the clean-room rules this project follows.
 
+How to use Plug: see the [user manual](MANUAL.md). Website graphics and the manual as a web page are in [`Web/`](Web/).
+
 ## Build and run (macOS 14.2 or newer)
 Plug is a Swift package. There is no Xcode project file.
 
