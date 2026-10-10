@@ -94,7 +94,17 @@ final class QuickButtonsModel: ObservableObject {
             let claudePath = QuickAction.claudeLocations(home: NSHomeDirectory())
                 .first { FileManager.default.isExecutableFile(atPath: $0) }
             guard let arguments = button.action.processArguments(claudePath: claudePath) else { return }
-            launch(arguments, for: button)
+            var folder = FileManager.default.homeDirectoryForCurrentUser
+            if let typed = button.action.workingFolder {
+                var isFolder: ObjCBool = false
+                let path = (typed as NSString).expandingTildeInPath
+                guard FileManager.default.fileExists(atPath: path, isDirectory: &isFolder), isFolder.boolValue else {
+                    errorMessage = "\(button.title): there's no folder at \u{201C}\(typed)\u{201D}."
+                    return
+                }
+                folder = URL(fileURLWithPath: path, isDirectory: true)
+            }
+            launch(arguments, in: folder, for: button)
         }
     }
 
@@ -138,11 +148,14 @@ final class QuickButtonsModel: ObservableObject {
     /// Starts the program off the main thread and collects what it prints.
     /// Output and errors share one pipe, read to the end before waiting, so
     /// a chatty program can't fill the pipe and stall.
-    private func launch(_ arguments: [String], for button: QuickButton) {
+    private func launch(_ arguments: [String], in folder: URL, for button: QuickButton) {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: arguments[0])
         process.arguments = Array(arguments.dropFirst())
-        process.currentDirectoryURL = FileManager.default.homeDirectoryForCurrentUser
+        process.currentDirectoryURL = folder
+        var environment = ProcessInfo.processInfo.environment
+        environment["PATH"] = QuickAction.searchPath(home: NSHomeDirectory(), current: environment["PATH"])
+        process.environment = environment
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = pipe

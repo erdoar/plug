@@ -17,9 +17,17 @@ struct ButtonsSettings: View {
                 List(selection: $selection) {
                     ForEach(buttons.buttons) { button in
                         Label(button.title.isEmpty ? "Untitled" : button.title, systemImage: button.symbol)
-                            .tag(button.id)
+                            // The same type as the selection (UUID?), so a
+                            // click really selects the row.
+                            .tag(Optional(button.id))
+                            .contextMenu {
+                                Button("Delete") { remove(button.id) }
+                            }
                     }
                     .onMove { buttons.move(fromOffsets: $0, toOffset: $1) }
+                }
+                .onDeleteCommand {
+                    if let selection { remove(selection) }
                 }
                 Divider()
                 HStack(spacing: 2) {
@@ -36,10 +44,7 @@ struct ButtonsSettings: View {
                     .fixedSize()
                     .help("Add a button")
                     Button {
-                        if let selection {
-                            buttons.remove(id: selection)
-                            self.selection = buttons.buttons.first?.id
-                        }
+                        if let selection { remove(selection) }
                     } label: {
                         Image(systemName: "minus")
                     }
@@ -76,6 +81,14 @@ struct ButtonsSettings: View {
                 selection = buttons.buttons.first?.id
             }
         }
+    }
+
+    /// Removes a button and selects the one now in its place, if any.
+    private func remove(_ id: UUID) {
+        let index = buttons.buttons.firstIndex { $0.id == id } ?? 0
+        buttons.remove(id: id)
+        let remaining = buttons.buttons
+        selection = remaining.isEmpty ? nil : remaining[min(index, remaining.count - 1)].id
     }
 
     private func binding(for id: UUID) -> Binding<QuickButton>? {
@@ -215,15 +228,42 @@ private struct ActionFields: View {
                     }
                 }
             }
-        case .claude(let prompt):
+        case let .claude(prompt, folder, access, allowedTools):
             VStack(alignment: .leading, spacing: 4) {
                 Text("Prompt")
-                TextEditor(text: Binding(get: { prompt }, set: { action = .claude(prompt: $0) }))
+                TextEditor(text: Binding(get: { prompt },
+                                         set: { action = .claude(prompt: $0, folder: folder, access: access, allowedTools: allowedTools) }))
                     .frame(minHeight: 90)
-                Text("Runs Claude Code on this Mac with your own sign-in. Install it and run `claude` once in Terminal first.")
+                Text("Runs Claude Code on this Mac with your own sign-in. Start with / to run a slash command or skill, like /run.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            HStack {
+                TextField("Folder", text: Binding(get: { folder ?? "" },
+                                                  set: { action = .claude(prompt: prompt, folder: $0, access: access, allowedTools: allowedTools) }),
+                          prompt: Text("Home folder"))
+                Button("Choose…") {
+                    let panel = NSOpenPanel()
+                    panel.canChooseDirectories = true
+                    panel.canChooseFiles = false
+                    if panel.runModal() == .OK, let url = panel.url {
+                        action = .claude(prompt: prompt, folder: url.path, access: access, allowedTools: allowedTools)
+                    }
+                }
+            }
+            Text("Claude starts here, so it uses this project's commands, skills and CLAUDE.md.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Picker("Claude may", selection: Binding(get: { access ?? .answer },
+                                                    set: { action = .claude(prompt: prompt, folder: folder, access: $0, allowedTools: allowedTools) })) {
+                ForEach(ClaudeAccess.allCases) { Text($0.label).tag($0) }
+            }
+            TextField("Also allow", text: Binding(get: { allowedTools ?? "" },
+                                                  set: { action = .claude(prompt: prompt, folder: folder, access: access, allowedTools: $0) }),
+                      prompt: Text("e.g. Bash(swift test),Bash(scripts/bundle.sh)"))
+            Text("Nobody is there to approve anything, so Claude is refused whatever this doesn't allow. Name commands it may run, separated by commas.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 }

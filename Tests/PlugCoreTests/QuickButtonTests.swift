@@ -27,6 +27,8 @@ final class QuickButtonTests: XCTestCase {
             QuickButton(title: "Lights", symbol: "lightbulb", action: .shortcut(name: "Studio lights")),
             QuickButton(title: "Docs", symbol: "safari", action: .open(target: "https://example.com")),
             QuickButton(title: "Ask", symbol: "sparkles", action: .claude(prompt: "Suggest an EQ for \"voice\"")),
+            QuickButton(title: "Run", symbol: "play", action: .claude(prompt: "/run", folder: "~/plug", access: .edit,
+                                                                     allowedTools: "Bash(swift *)")),
         ]
         let url = directory.appendingPathComponent("buttons.json")
         try QuickButtonStore.save(buttons, to: url)
@@ -72,9 +74,14 @@ final class QuickButtonTests: XCTestCase {
     func testPromptsAndNamesAreArgumentsNotCommandText() {
         let prompt = "say \"hi\"; rm -rf ~"
         XCTAssertEqual(QuickAction.claude(prompt: prompt).processArguments(),
-                       ["/bin/zsh", "-lc", "claude -p \"$1\"", "plug", prompt])
+                       ["/bin/zsh", "-lc", "claude \"$@\"", "plug", "-p", prompt, "--permission-mode", "dontAsk"])
         XCTAssertEqual(QuickAction.claude(prompt: prompt).processArguments(claudePath: "/opt/homebrew/bin/claude"),
-                       ["/opt/homebrew/bin/claude", "-p", prompt])
+                       ["/opt/homebrew/bin/claude", "-p", prompt, "--permission-mode", "dontAsk"])
+        XCTAssertEqual(QuickAction.claude(prompt: "/run", access: .edit, allowedTools: " Bash(swift *),Read ")
+                           .processArguments(claudePath: "/c"),
+                       ["/c", "-p", "/run", "--permission-mode", "acceptEdits", "--allowedTools", "Bash(swift *),Read"])
+        XCTAssertEqual(QuickAction.claude(prompt: "/run", allowedTools: "  ").processArguments(claudePath: "/c"),
+                       ["/c", "-p", "/run", "--permission-mode", "dontAsk"], "blank allowed tools are left out")
         XCTAssertEqual(QuickAction.shortcut(name: "A; B").processArguments(), ["/usr/bin/shortcuts", "run", "A; B"])
         XCTAssertEqual(QuickAction.shell(command: "ls ~").processArguments(), ["/bin/zsh", "-lc", "ls ~"])
         XCTAssertNil(QuickAction.open(target: "https://example.com").processArguments())
@@ -87,5 +94,33 @@ final class QuickButtonTests: XCTestCase {
         XCTAssertNotNil(QuickAction.plug(.recallPreset(name: "")).problem)
         XCTAssertNil(QuickAction.plug(.setMaster(decibels: nil)).problem)
         XCTAssertNil(QuickAction.shortcut(name: "Lights").problem)
+    }
+
+    /// Ask Claude buttons saved before the folder and access settings
+    /// existed still load, with those unset.
+    func testOlderClaudeButtonStillLoads() throws {
+        let id = UUID()
+        let json = "[{\"id\":\"\(id.uuidString)\",\"title\":\"Ask\",\"symbol\":\"sparkles\",\"showsOutput\":true,\"action\":{\"claude\":{\"prompt\":\"Hello\"}}}]"
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let url = directory.appendingPathComponent("buttons.json")
+        try Data(json.utf8).write(to: url)
+        let loaded = QuickButtonStore.load(from: url)
+        XCTAssertEqual(loaded, [QuickButton(id: id, title: "Ask", symbol: "sparkles", action: .claude(prompt: "Hello"),
+                                            showsOutput: true)])
+        XCTAssertNil(loaded.first?.action.workingFolder)
+    }
+
+    func testWorkingFolder() {
+        XCTAssertEqual(QuickAction.claude(prompt: "/run", folder: " ~/plug ").workingFolder, "~/plug")
+        XCTAssertNil(QuickAction.claude(prompt: "/run", folder: " ").workingFolder)
+        XCTAssertNil(QuickAction.shell(command: "ls").workingFolder)
+    }
+
+    func testSearchPathPutsInstallFoldersFirstWithoutRepeats() {
+        XCTAssertEqual(QuickAction.searchPath(home: "/Users/a", current: "/usr/bin:/bin:/usr/sbin:/sbin"),
+                       "/Users/a/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin")
+        XCTAssertEqual(QuickAction.searchPath(home: "/h", current: "/custom::/opt/homebrew/bin"),
+                       "/h/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/custom:/usr/bin:/bin:/usr/sbin:/sbin")
+        XCTAssertTrue(QuickAction.searchPath(home: "/h", current: nil).hasSuffix("/usr/bin:/bin:/usr/sbin:/sbin"))
     }
 }
