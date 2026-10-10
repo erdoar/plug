@@ -64,16 +64,7 @@ struct MasterKnob: View {
         Button {
             model.toggleMIDILearn()
         } label: {
-            Text(model.isLearningMIDI ? "MOVE A CONTROL" : (model.masterMIDI?.label ?? "MIDI LEARN"))
-                .font(.system(size: 9, weight: .bold, design: .serif))
-                .foregroundStyle(Color(red: 0.25, green: 0.15, blue: 0.05))
-                .padding(.horizontal, 6)
-                .padding(.vertical, 3)
-                .background(
-                    Capsule().fill(LinearGradient(colors: [Color(red: 0.93, green: 0.8, blue: 0.5), Color(red: 0.66, green: 0.5, blue: 0.24)],
-                                                  startPoint: .top, endPoint: .bottom))
-                )
-                .overlay(Capsule().strokeBorder(Color(red: 0.4, green: 0.28, blue: 0.1).opacity(0.6), lineWidth: 1))
+            BrassPlateLabel(text: model.isLearningMIDI ? "MOVE A CONTROL" : (model.masterMIDI?.label ?? "MIDI LEARN"))
                 .opacity(model.isLearningMIDI ? 0.6 : 1)
                 .animation(model.isLearningMIDI ? .easeInOut(duration: 0.5).repeatForever() : .default,
                            value: model.isLearningMIDI)

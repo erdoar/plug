@@ -18,6 +18,8 @@ struct ContentView: View {
             if let message = model.errorMessage {
                 Text(message).foregroundStyle(.red)
             }
+
+            PresetBar(model: model)
         }
         .padding()
         .frame(minWidth: 900)
