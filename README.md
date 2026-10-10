@@ -35,6 +35,9 @@ To work in Xcode instead, open the folder that contains `Package.swift` (File > 
 - `Tests/PlugCoreTests/`, `Tests/PlugRingBufferTests/`: unit tests that also run on Linux.
 - `Tests/PlugEngineTests/`: engine tests using Apple's built-in AUDelay. macOS only; they wire the graph but play no sound.
 
+## Presets
+The strip at the bottom saves the whole setup (input, apps, output, effects with their settings, and the master level) as a named preset, and recalls it from the preset knob. Presets are JSON files in `~/Library/Application Support/Plug/Presets/`. The MIDI assignment isn't part of a preset; it stays with your controller.
+
 ## Known limits
 - The master knob sits after the effect chain and goes from silence to +10 dB; 0 dB is at 80% of the turn, marked by the bent tack (click the tack to return there). Boosted audio that goes over full scale clips at the output. MIDI Learn binds it to one control change (channel and controller) from any MIDI source; MIDI is receive-only, so motorised faders aren't moved to match.
 - `swift run` starts the app without an `.app` bundle or `Info.plist`, so anything that needs permission must be run from `scripts/bundle.sh` instead.

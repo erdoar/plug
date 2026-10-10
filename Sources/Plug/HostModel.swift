@@ -34,6 +34,9 @@ final class HostModel: ObservableObject {
     @Published private(set) var masterPosition: Double = MasterVolume.unityPosition
     @Published private(set) var masterMIDI: MIDIBinding?
     @Published private(set) var isLearningMIDI = false
+    @Published private(set) var presetNames: [String] = []
+    /// The preset last saved or recalled, shown on the preset scale.
+    @Published private(set) var currentPreset: String?
     @Published var errorMessage: String?
     let effectGroups: [EffectGroup]
 
@@ -46,9 +49,11 @@ final class HostModel: ObservableObject {
     private var midiInput: MIDIInput?
     private var pendingSave: Task<Void, Never>?
 
-    private static let settingsURL = FileManager.default
+    private static let supportURL = FileManager.default
         .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("Plug/settings.json")
+        .appendingPathComponent("Plug")
+    private static let settingsURL = supportURL.appendingPathComponent("settings.json")
+    private static let presetsURL = supportURL.appendingPathComponent("Presets")
 
     init() {
         engine = AudioEngine()
@@ -60,6 +65,7 @@ final class HostModel: ObservableObject {
         refreshOutputDevices()
         restoreSettings()
         startMIDI()
+        presetNames = PresetStore.names(in: Self.presetsURL)
         // Effect parameters change in their own windows without telling the
         // model, so save once more on the way out.
         terminationObserver = NotificationCenter.default.addObserver(
@@ -73,6 +79,21 @@ final class HostModel: ObservableObject {
     /// the engine: system audio capture waits for Start.
     private func restoreSettings() {
         guard let settings = SettingsStore.load(from: Self.settingsURL) else { return }
+        masterMIDI = settings.masterMIDI
+        apply(settings)
+        errorMessage = nil
+    }
+
+    /// Replaces the current setup with `settings`: effects (with their saved
+    /// states), master level, captured apps, output and input. The MIDI
+    /// assignment is left alone, since it belongs to the controller rather
+    /// than to a setup. Never starts the engine.
+    private func apply(_ settings: HostSettings) {
+        for slot in chain.slots {
+            pluginWindows.close(slotID: slot.id)
+        }
+        chain = PluginChain()
+        pendingStates = [:]
         // Effects first: choosing input and output below saves settings, and
         // that save must already include them.
         for saved in settings.slots {
@@ -83,9 +104,12 @@ final class HostModel: ObservableObject {
             }
         }
         setMasterPosition(settings.masterPosition)
-        masterMIDI = settings.masterMIDI
         capturedApps = Set(settings.capturedApps)
-        try? engine.setCapturedApps(capturedApps)
+        do {
+            try engine.setCapturedApps(capturedApps)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
         if let uid = settings.outputDeviceUID,
            let device = outputDevices.first(where: { $0.uid == uid }),
            device.id != selectedOutputID {
@@ -93,11 +117,18 @@ final class HostModel: ObservableObject {
         }
         selectInput(settings.input)
         syncEngine()
-        errorMessage = nil
     }
 
     func saveSettings() {
-        let settings = HostSettings(
+        do {
+            try SettingsStore.save(currentSettings(), to: Self.settingsURL)
+        } catch {
+            errorMessage = "Couldn't save settings: \(error.localizedDescription)"
+        }
+    }
+
+    private func currentSettings() -> HostSettings {
+        HostSettings(
             input: input,
             outputDeviceUID: outputDevices.first { $0.id == selectedOutputID }?.uid,
             slots: chain.slots.compactMap { slot in
@@ -110,11 +141,42 @@ final class HostModel: ObservableObject {
             masterPosition: masterPosition,
             masterMIDI: masterMIDI
         )
+    }
+
+    // MARK: - Presets
+
+    func savePreset(named name: String) {
         do {
-            try SettingsStore.save(settings, to: Self.settingsURL)
+            currentPreset = try PresetStore.save(currentSettings(), named: name, in: Self.presetsURL)
+            presetNames = PresetStore.names(in: Self.presetsURL)
+            errorMessage = nil
         } catch {
-            errorMessage = "Couldn't save settings: \(error.localizedDescription)"
+            errorMessage = "Couldn't save the preset: \(error.localizedDescription)"
         }
+    }
+
+    func recallPreset(_ name: String) {
+        guard let settings = PresetStore.load(named: name, in: Self.presetsURL) else {
+            errorMessage = "Couldn't read the preset \u{201C}\(name)\u{201D}."
+            presetNames = PresetStore.names(in: Self.presetsURL)
+            return
+        }
+        errorMessage = nil
+        apply(settings)
+        currentPreset = name
+        saveSettings()
+    }
+
+    func deletePreset(_ name: String) {
+        do {
+            try PresetStore.delete(named: name, in: Self.presetsURL)
+            if currentPreset == name {
+                currentPreset = nil
+            }
+        } catch {
+            errorMessage = "Couldn't delete the preset: \(error.localizedDescription)"
+        }
+        presetNames = PresetStore.names(in: Self.presetsURL)
     }
 
     // MARK: - Master volume and MIDI

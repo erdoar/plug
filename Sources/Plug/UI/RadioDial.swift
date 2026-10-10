@@ -66,6 +66,7 @@ struct DialChoices<Value: Hashable>: View {
 struct TuningScale: View {
     let reading: String
     let position: Double
+    var width: CGFloat = 136
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -97,7 +98,7 @@ struct TuningScale: View {
                 .padding(.horizontal, 6)
                 .padding(.bottom, 4)
         }
-        .frame(width: 136, height: 38)
+        .frame(width: width, height: 38)
         .overlay(
             RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(LinearGradient(colors: [Color(red: 0.95, green: 0.82, blue: 0.5), Color(red: 0.5, green: 0.36, blue: 0.14)],
