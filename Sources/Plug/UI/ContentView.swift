@@ -3,11 +3,32 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var model: HostModel
+    /// Whether the drawer below the board is open; remembered between launches.
+    @AppStorage("drawerOpen") private var isDrawerOpen = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             topPanel
 
+            if isDrawerOpen {
+                drawer
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            if let message = model.errorMessage {
+                Text(message).foregroundStyle(.red)
+            }
+        }
+        .padding()
+        .frame(minWidth: 760)
+    }
+
+    // MARK: - Drawer
+
+    /// Everything below the board: capture notes, the app list and the
+    /// effect chain. The window grows and shrinks with it.
+    private var drawer: some View {
+        VStack(alignment: .leading, spacing: 12) {
             if model.input == .systemAudio {
                 Text("While Plug runs, other apps play only through Plug. The first time, macOS asks to allow System Audio Recording. This needs the app built with scripts/bundle.sh.")
                     .font(.caption)
@@ -77,13 +98,9 @@ struct ContentView: View {
                     model.moveSlots(from: source, to: destination)
                 }
             }
+            .frame(minHeight: 240)
 
-            if let message = model.errorMessage {
-                Text(message).foregroundStyle(.red)
-            }
         }
-        .padding()
-        .frame(minWidth: 760, minHeight: 420)
     }
 
     // MARK: - Top panel
@@ -95,20 +112,28 @@ struct ContentView: View {
     ]
 
     private var topPanel: some View {
-        HStack(alignment: .center, spacing: 20) {
-            LampButton(title: "START", color: Color(red: 0.13, green: 0.66, blue: 0.24), isLit: model.isRunning) {
-                if !model.isRunning { model.toggleEngine() }
+        VStack(spacing: 6) {
+            HStack(alignment: .center, spacing: 20) {
+                LampButton(title: "START", color: Color(red: 0.13, green: 0.66, blue: 0.24), isLit: model.isRunning) {
+                    if !model.isRunning { model.toggleEngine() }
+                }
+                LampButton(title: "STOP", color: Color(red: 0.82, green: 0.12, blue: 0.08), isLit: !model.isRunning) {
+                    if model.isRunning { model.toggleEngine() }
+                }
+                Spacer(minLength: 12)
+                inputDial
+                outputDial
+                addDial
             }
-            LampButton(title: "STOP", color: Color(red: 0.82, green: 0.12, blue: 0.08), isLit: !model.isRunning) {
-                if model.isRunning { model.toggleEngine() }
+            DrawerHandle(isOpen: isDrawerOpen) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isDrawerOpen.toggle()
+                }
             }
-            Spacer(minLength: 12)
-            inputDial
-            outputDial
-            addDial
         }
         .padding(.horizontal, 24)
-        .padding(.vertical, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
         .background(PineBoard())
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .shadow(color: .black.opacity(0.35), radius: 6, y: 3)
