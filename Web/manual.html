@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Plug: user manual</title>
+  <title>Plug: user guide</title>
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -27,368 +27,107 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <meta property="og:title" content="Plug: user manual">
+  <meta property="og:title" content="Plug: user guide">
   <meta property="og:image" content="og-image.png">
 </head>
 <body>
 <header class="masthead"><img src="logo.png" alt="Plug"></header>
 <main>
-<h1 id="plug-user-manual">Plug: user manual</h1>
-<p>Plug is an Audio Unit host for your Mac. It takes the sound your Mac
-plays (everything, or only the apps you choose), runs it through Audio
-Unit effects, and plays the result to the output you pick. While Plug is
-playing, the audio it captures is heard only through Plug, so you hear
-the effected version and not the original as well.</p>
-<h2 id="contents">Contents</h2>
-<ol type="1">
-<li><a href="#what-you-need">What you need</a></li>
-<li><a href="#install">Install</a></li>
-<li><a href="#the-first-run">The first run</a></li>
-<li><a href="#a-tour-of-the-window">A tour of the window</a></li>
-<li><a href="#inputs">Inputs</a></li>
-<li><a href="#output">Output</a></li>
-<li><a href="#effects">Effects</a></li>
-<li><a href="#the-master-knob">The master knob</a></li>
-<li><a href="#midi-control">MIDI control</a></li>
-<li><a href="#presets">Presets</a></li>
-<li><a href="#dock-menu-and-menu-bar">Dock menu and menu bar</a></li>
-<li><a href="#help-about-and-updates">Help, About and updates</a></li>
-<li><a href="#where-plug-keeps-things">Where Plug keeps things</a></li>
-<li><a href="#troubleshooting">Troubleshooting</a></li>
-</ol>
-<h2 id="what-you-need">What you need</h2>
-<ul>
-<li><p>A Mac running <strong>macOS 14.2 (Sonoma) or later</strong>. Plug
-captures audio with Core Audio process taps, which arrived in
-14.2.</p></li>
-<li><p>To build Plug from source: <strong>Xcode</strong> (from the App
-Store), with Xcode selected for command-line builds:</p>
-<pre><code>sudo xcode-select -s /Applications/Xcode.app/Contents/Developer</code></pre></li>
-<li><p>Any Audio Unit effects you want to use. macOS includes Apple's
-own (AUDelay, AUReverb, AUGraphicEQ and more); third-party Audio Unit
-plugins appear too.</p></li>
-<li><p>Optional: a MIDI controller, to turn the master volume from
-hardware.</p></li>
-</ul>
+<h1 id="plug">Plug</h1>
+<p>Plug runs the sound your Mac plays through Audio Unit effects, and
+plays the result to the output you choose. It needs macOS 14.2 or
+later.</p>
 <h2 id="install">Install</h2>
-<p>In Terminal, from the folder containing Plug's source:</p>
-<pre><code>scripts/bundle.sh --open</code></pre>
-<p>This builds Plug and wraps it in <code>build/Plug.app</code>, then
-opens it. To keep it handy, drag <code>build/Plug.app</code> to the Dock
-or to Applications.</p>
-<p>Plug is signed for your Mac only (an "ad hoc" signature). This
-means:</p>
+<ol type="1">
+<li>Open the Plug disk image and drag <strong>Plug</strong> onto
+<strong>Applications</strong>.</li>
+<li>The first time, <strong>right-click Plug</strong> in Applications
+and choose <strong>Open</strong>, then <strong>Open</strong> again.
+After that, open it as usual.</li>
+<li>When you first press <strong>START</strong>, macOS asks to allow
+<strong>System Audio Recording</strong>. Allow it.</li>
+</ol>
+<h2 id="play">Play</h2>
 <ul>
-<li>macOS may ask for permission again after you rebuild.</li>
-<li>After a rebuild the Dock can keep showing an old icon. If so, remove
-Plug from the Dock and drag <code>build/Plug.app</code> back in.</li>
+<li><strong>START</strong> (green) plays. <strong>STOP</strong> (red)
+stops. The lit lamp shows which is active.</li>
+<li>While Plug plays, the sound it captures is heard only through Plug.
+Press <strong>STOP</strong> and other apps play normally again.</li>
+<li>Keep your volume low at first. The master knob can boost.</li>
 </ul>
-<p>Quit Plug before rebuilding or running <code>swift test</code>. While
-Plug runs from <code>swift run</code>, the build folder is locked.</p>
-<h2 id="the-first-run">The first run</h2>
-<p>Plug opens stopped, playing nothing. Nothing is captured or muted
-until you press <strong>START</strong>.</p>
-<p>The first time you start Plug with <strong>System audio</strong> or
-<strong>Apps</strong> as the input, macOS asks to allow <strong>System
-Audio Recording</strong>. Allow it. If you said no, or you hear nothing,
-turn Plug on in <strong>System Settings &gt; Privacy &amp; Security &gt;
-Screen &amp; System Audio Recording</strong>, then press
-<strong>STOP</strong> and <strong>START</strong> again.</p>
-<p><strong>Keep your volume low the first time.</strong> The master knob
-can boost by up to 10 dB.</p>
-<h2 id="a-tour-of-the-window">A tour of the window</h2>
-<p>The window has three parts: the <strong>top board</strong>, the
-<strong>drawer</strong> in the middle, and the <strong>preset
-strip</strong> at the bottom.</p>
-<h3 id="the-top-board">The top board</h3>
-<p>From left to right:</p>
-<table>
-<thead>
-<tr class="header">
-<th>Control</th>
-<th>What it does</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>START</strong> (green lamp)</td>
-<td>Starts Plug. The green lamp glows while Plug plays.</td>
-</tr>
-<tr class="even">
-<td><strong>STOP</strong> (red lamp)</td>
-<td>Stops Plug. The red lamp glows while Plug is stopped. Stopping ends
-any capture, so other apps play normally again.</td>
-</tr>
-<tr class="odd">
-<td><strong>MASTER</strong> knob</td>
-<td>The level after all the effects. Drag up or down to turn it. The
-scale above shows the level in dB. See <a href="#the-master-knob">The
-master knob</a>.</td>
-</tr>
-<tr class="even">
-<td>Bent tack</td>
-<td>Marks 0 dB beside the master knob. Click it to return the knob to 0
-dB.</td>
-</tr>
-<tr class="odd">
-<td><strong>MIDI LEARN</strong> plate</td>
-<td>Links the master knob to a knob or fader on a MIDI controller. See
-<a href="#midi-control">MIDI control</a>.</td>
-</tr>
-<tr class="even">
-<td><strong>INPUT</strong> dial</td>
-<td>What goes into the effects: test tone, system audio, or chosen
-apps.</td>
-</tr>
-<tr class="odd">
-<td><strong>OUTPUT</strong> dial</td>
-<td>Where Plug plays: speakers, headphones, an interface.</td>
-</tr>
-<tr class="even">
-<td><strong>ADD</strong> dial</td>
-<td>Adds an Audio Unit effect to the end of the chain.</td>
-</tr>
-</tbody>
-</table>
-<p>The three dials work like an old radio's band selector. Click the
-knob to open its choices, and pick one. The pointer and the needle on
-the scale move to your choice, and the scale shows its name.</p>
-<h3 id="the-drawer">The drawer</h3>
-<p>Click the worn iron <strong>handle</strong> in the middle of the
-preset strip to open or close the drawer. The window grows and shrinks
-with it, and Plug remembers whether you left it open.</p>
-<p>The drawer holds:</p>
+<h2 id="choose-what-goes-in-input">Choose what goes in: INPUT</h2>
+<p>Click the <strong>INPUT</strong> knob and pick one:</p>
 <ul>
-<li>A note about the current input.</li>
-<li>With the <strong>Apps</strong> input, the list of apps to tick.</li>
-<li>The <strong>effect chain</strong>, top to bottom in the order audio
-passes through.</li>
+<li><strong>Test tone</strong>: a quiet tone, for trying effects.</li>
+<li><strong>System audio</strong>: everything your Mac plays.</li>
+<li><strong>Apps</strong>: only the apps you tick in the drawer. Click
+the arrow to refresh the list. An app opened while Plug is playing joins
+at the next <strong>STOP</strong> and <strong>START</strong>.</li>
 </ul>
-<h3 id="the-preset-strip">The preset strip</h3>
-<p>From left to right: the <strong>PRESETS</strong> label, a scale
-showing the current preset's name, the drawer handle in the centre, the
-<strong>preset knob</strong> (click to open the preset list), and the
-<strong>SAVE</strong> plate. See <a href="#presets">Presets</a>.</p>
-<h2 id="inputs">Inputs</h2>
-<p>Choose the input on the <strong>INPUT</strong> dial.</p>
-<p><strong>Test tone.</strong> A quiet 440 Hz tone, for trying effects
-without playing anything. Nothing is captured.</p>
-<p><strong>System audio.</strong> Everything your Mac plays, except Plug
-itself. While Plug plays, all other apps are heard only through
-Plug.</p>
-<p><strong>Apps.</strong> Only the apps you tick. Ticked apps are heard
-only through Plug; every other app plays normally. With
-<strong>Apps</strong> selected, the drawer lists:</p>
-<ul>
-<li>apps that are playing sound now, marked <em>playing</em>;</li>
-<li>other open apps that have used audio;</li>
-<li>any app you've ticked before, even if it's closed.</li>
-</ul>
-<p>Click the refresh arrow to update the list.</p>
-<p>Things to know about <strong>Apps</strong>:</p>
-<ul>
-<li>An app's helper processes count as part of the app. Chrome, Spotify,
-Slack and similar apps play sound from helpers, and ticking the app
-captures them all.</li>
-<li>Safari and other apps built on Apple's web engine play web audio
-from one shared process. It appears as a single entry, <strong>Safari
-and web views</strong>, so they're captured together.</li>
-<li>Plug finds the ticked apps when it starts. An app opened while Plug
-is running joins at the next <strong>STOP</strong> and
-<strong>START</strong>.</li>
-<li>If none of the ticked apps is open, Plug says so and captures
-nothing.</li>
-</ul>
-<h2 id="output">Output</h2>
-<p>Choose where Plug plays on the <strong>OUTPUT</strong> dial. It lists
-every output on your Mac. If you plug something in while Plug is open,
-open the dial and click <strong>Refresh devices</strong>.</p>
-<p>You can switch output while Plug plays. While capturing, Plug keeps
-time with the output it started on. If you hear occasional clicks after
-switching, press <strong>STOP</strong> and <strong>START</strong> to
-resync.</p>
+<h2 id="choose-where-it-plays-output">Choose where it plays: OUTPUT</h2>
+<p>Click the <strong>OUTPUT</strong> knob and pick a speaker, headphones
+or interface. Choose <strong>Refresh devices</strong> if one is
+missing.</p>
 <h2 id="effects">Effects</h2>
-<p><strong>Add an effect.</strong> Click the <strong>ADD</strong> dial
-and pick one. Effects are grouped by maker. Each new effect goes on the
-end of the chain.</p>
-<p>In the drawer, each effect has:</p>
-<table>
-<thead>
-<tr class="header">
-<th>Control</th>
-<th>What it does</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Bypass</strong></td>
-<td>Passes audio through the effect untouched. Its settings are
-kept.</td>
-</tr>
-<tr class="even">
-<td>Sliders icon</td>
-<td>Opens the effect's controls in a window: the plugin's own interface,
-or Apple's generic sliders for effects without one.</td>
-</tr>
-<tr class="odd">
-<td>Bin</td>
-<td>Removes the effect and closes its window.</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Reorder</strong> by dragging an effect up or down. The sound
-follows the new order straight away.</p>
-<p>Plug remembers the chain and every effect's settings when you quit.
-That includes changes made in the effects' own windows.</p>
-<h2 id="the-master-knob">The master knob</h2>
-<p>The master knob sets the level after the whole effect chain.</p>
 <ul>
-<li><strong>0 dB</strong> sits at 80% of the knob's turn, marked by the
-<strong>bent tack</strong>. At 0 dB, Plug neither raises nor lowers the
-level.</li>
-<li>Below the tack, the level falls smoothly to silence. Halfway to the
-tack is about −18 dB.</li>
-<li>Above the tack, the level rises evenly to <strong>+10 dB</strong> at
-the top. Boosted audio that goes past full scale will distort, so use
-the boost with care.</li>
-<li><strong>Drag up or down</strong> on the knob to turn it.</li>
-<li><strong>Click the tack</strong> to snap back to 0 dB.</li>
-<li>With VoiceOver, use the adjust gestures.</li>
+<li><strong>Add:</strong> click the <strong>ADD</strong> knob and pick
+an effect.</li>
+<li><strong>Order:</strong> drag effects up or down in the drawer. Sound
+passes through them top to bottom.</li>
+<li><strong>Bypass:</strong> switches an effect off but keeps its
+settings.</li>
+<li><strong>Sliders icon:</strong> opens the effect's controls.</li>
+<li><strong>Bin:</strong> removes the effect.</li>
+</ul>
+<p>The worn handle in the bottom strip opens and closes the drawer.</p>
+<h2 id="master-volume">Master volume</h2>
+<ul>
+<li>Drag the <strong>MASTER</strong> knob up or down.</li>
+<li>The <strong>bent tack</strong> marks 0 dB. Click the tack to return
+there.</li>
+<li>Below the tack turns the level down. Above it boosts, up to +10 dB.
+Too much boost distorts.</li>
 </ul>
 <h2 id="midi-control">MIDI control</h2>
-<p>Plug listens to every MIDI source on your Mac: USB and Bluetooth
-controllers, and other apps through the IAC Driver. Devices plugged in
-while Plug runs are picked up too.</p>
-<p><strong>To link a hardware knob or fader to the master:</strong></p>
 <ol type="1">
-<li>Click the <strong>MIDI LEARN</strong> plate. It reads <strong>MOVE A
-CONTROL</strong> and pulses.</li>
-<li>Move the knob or fader on your controller.</li>
-<li>The plate now shows the control, e.g. <strong>CC 7 · CH 1</strong>.
-Turning it turns the master.</li>
+<li>Click <strong>MIDI LEARN</strong>.</li>
+<li>Move a knob or fader on your MIDI controller.</li>
+<li>That control now turns the master knob.</li>
 </ol>
-<p>The control's full travel covers silence to +10 dB, with 0 dB at
-about value 102.</p>
-<ul>
-<li><strong>To change it:</strong> click the plate again and move
-another control.</li>
-<li><strong>To cancel learning:</strong> click the plate again before
-moving anything.</li>
-<li><strong>To remove the link:</strong> right-click the plate and
-choose <strong>Forget MIDI control</strong>.</li>
-</ul>
-<p>MIDI only comes in. Plug can't move a motorised fader to match the
-on-screen knob.</p>
+<p>Right-click <strong>MIDI LEARN</strong> to forget the control.</p>
 <h2 id="presets">Presets</h2>
-<p>A preset stores the whole setup:</p>
 <ul>
-<li>the input, and the ticked apps;</li>
-<li>the output device;</li>
-<li>every effect, in order, with all its settings and bypass state;</li>
-<li>the master level.</li>
+<li><strong>SAVE</strong> stores everything: input, apps, output,
+effects with their settings, and the master level.</li>
+<li>Click the small <strong>preset knob</strong> to recall a preset, or
+click the bin beside it to delete it.</li>
 </ul>
-<p>The MIDI link isn't part of presets. It stays with your
-controller.</p>
-<p><strong>Save a preset.</strong> Click <strong>SAVE</strong>, type a
-name and press <strong>Save</strong>. Saving with an existing name
-replaces that preset.</p>
-<p><strong>Recall a preset.</strong> Click the <strong>preset
-knob</strong> and click a name. Plug loads it straight away. Recalling
-never starts or stops playback by itself.</p>
-<p><strong>Delete a preset.</strong> Click the bin beside its name in
-the list.</p>
-<h2 id="dock-menu-and-menu-bar">Dock menu and menu bar</h2>
-<p><strong>Dock menu.</strong> Right-click Plug's Dock icon for:</p>
+<h2 id="quick-controls">Quick controls</h2>
 <ul>
-<li><strong>Start</strong> or <strong>Stop</strong>;</li>
-<li>the master level in steps (+10, +6, +3, 0, −3, −6, −12, −24 dB, and
-Mute), with the nearest one ticked.</li>
+<li><strong>Dock icon, right-click:</strong> Start or Stop, and set the
+master level.</li>
+<li><strong>VU meter in the menu bar:</strong> a master volume slider,
+Start or Stop, Open Plug, and Quit.</li>
 </ul>
-<p><strong>Menu bar.</strong> Click the VU meter icon at the top of the
-screen for:</p>
+<p>Closing the window keeps Plug playing. Quit Plug to stop it
+completely.</p>
+<h2 id="help-and-updates">Help and updates</h2>
 <ul>
-<li>a master volume slider, and the level in dB;</li>
-<li><strong>0 dB</strong>, to return to unity;</li>
-<li><strong>Start</strong> or <strong>Stop</strong>;</li>
-<li><strong>Open Plug</strong>, to bring back the window;</li>
-<li><strong>Quit</strong>.</li>
+<li><strong>Help &gt; Plug Help</strong> opens this guide.</li>
+<li><strong>Plug &gt; Check for Updates…</strong> tells you if a newer
+Plug is available.</li>
 </ul>
-<p>The Dock menu, the menu bar, the on-screen knob and your MIDI control
-all move the same master, so they always agree.</p>
-<p>Closing the window doesn't stop Plug, which keeps playing. Click the
-Dock icon or choose <strong>Open Plug</strong> to bring the window back.
-Quit Plug to stop completely.</p>
-<h2 id="help-about-and-updates">Help, About and updates</h2>
+<h2 id="if-you-hear-nothing">If you hear nothing</h2>
 <ul>
-<li><strong>Help &gt; Plug Help</strong> (Cmd+?) opens this manual in
-your browser. It's built into Plug.app, so it works offline.</li>
-<li><strong>Plug &gt; About Plug</strong> shows Plug's version.</li>
-<li><strong>Plug &gt; Check for Updates…</strong> asks Plug's GitHub
-page for the latest release. If a newer one exists, Plug offers to open
-its download page. If you build Plug yourself, update by running
-<code>git pull</code>, then <code>scripts/bundle.sh</code>.</li>
-</ul>
-<p>Checking for updates needs an internet connection. It reads only the
-public release information and sends nothing about you or your
-setup.</p>
-<h2 id="where-plug-keeps-things">Where Plug keeps things</h2>
-<table>
-<thead>
-<tr class="header">
-<th>What</th>
-<th>Where</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Your last setup (restored at launch)</td>
-<td><code>~/Library/Application Support/Plug/settings.json</code></td>
-</tr>
-<tr class="even">
-<td>Presets, one file each</td>
-<td><code>~/Library/Application Support/Plug/Presets/</code></td>
-</tr>
-</tbody>
-</table>
-<p>Preset files can be backed up or copied to another Mac. To start
-completely fresh, quit Plug and delete <code>settings.json</code>.</p>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<p><strong>I hear nothing.</strong></p>
-<ul>
-<li>Check <strong>System Settings &gt; Privacy &amp; Security &gt;
-Screen &amp; System Audio Recording</strong> and allow Plug. Then
+<li>Allow Plug in <strong>System Settings &gt; Privacy &amp; Security
+&gt; Screen &amp; System Audio Recording</strong>, then press
 <strong>STOP</strong> and <strong>START</strong>.</li>
-<li>Check the master knob isn't at the bottom (−∞ dB).</li>
-<li>With <strong>Apps</strong>, check the app you want is ticked and was
-open when you pressed <strong>START</strong>.</li>
-<li>Check the <strong>OUTPUT</strong> dial points where you're
-listening.</li>
+<li>Check the <strong>MASTER</strong> knob isn't turned all the way
+down.</li>
+<li>Check <strong>OUTPUT</strong> is set to where you're listening.</li>
+<li>With <strong>Apps</strong>, check the app is ticked and was open
+when you pressed <strong>START</strong>.</li>
 </ul>
-<p><strong>Other apps went quiet.</strong> That's capture working: while
-Plug plays, captured audio is heard only through Plug. Press
-<strong>STOP</strong>, or quit Plug, and they play normally again.</p>
-<p><strong>Clicks after switching output.</strong> Press
-<strong>STOP</strong> and <strong>START</strong>.</p>
-<p><strong>An effect's window is too small.</strong> Some plugins don't
-say how big their interface is, so Plug opens them at a standard size.
-Drag the window's corner to resize it.</p>
-<p><strong>The MIDI control does nothing.</strong></p>
-<ul>
-<li>Check the plate shows the control you're moving. If not, click
-<strong>MIDI LEARN</strong> and move it again.</li>
-<li>Check the controller appears in <strong>Audio MIDI Setup</strong>
-(Applications &gt; Utilities).</li>
-</ul>
-<p><strong>The Dock still shows an old icon.</strong> Remove Plug from
-the Dock and drag <code>build/Plug.app</code> back in.</p>
-<p><strong><code>swift test</code> says "no such module
-XCTest".</strong> Point the command line at Xcode, then run the tests
-again:</p>
-<pre><code>sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-sudo xcodebuild -runFirstLaunch</code></pre>
-<p><strong>A build or <code>swift test</code> seems stuck.</strong> Quit
-Plug first. A running <code>swift run Plug</code> locks the build
-folder.</p>
 </main>
 </body>
 </html>
