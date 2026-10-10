@@ -1,6 +1,6 @@
 /// Identifies an Audio Unit by its type, subtype and manufacturer
 /// four-character codes, e.g. "aufx" / "dely" / "appl" for Apple's AUDelay.
-public struct EffectID: Hashable {
+public struct EffectID: Hashable, Codable {
     public let type: UInt32
     public let subtype: UInt32
     public let manufacturer: UInt32

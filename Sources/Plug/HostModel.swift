@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import Foundation
 import PlugCore
@@ -24,6 +25,14 @@ final class HostModel: ObservableObject {
 
     private let engine: AudioEngine
     private let pluginWindows = PluginWindows()
+    /// Saved effect states not yet put back into their units (they load
+    /// asynchronously). Saving uses these until the unit has its own.
+    private var pendingStates: [UUID: Data] = [:]
+    private var terminationObserver: NSObjectProtocol?
+
+    private static let settingsURL = FileManager.default
+        .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("Plug/settings.json")
 
     init() {
         engine = AudioEngine()
@@ -33,6 +42,55 @@ final class HostModel: ObservableObject {
         // The engine starts on the system default output.
         selectedOutputID = OutputDevices.defaultDeviceID()
         refreshOutputDevices()
+        restoreSettings()
+        // Effect parameters change in their own windows without telling the
+        // model, so save once more on the way out.
+        terminationObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.saveSettings() }
+        }
+    }
+
+    /// Puts back the last session's input, output and effects. Never starts
+    /// the engine: system audio capture waits for Start.
+    private func restoreSettings() {
+        guard let settings = SettingsStore.load(from: Self.settingsURL) else { return }
+        // Effects first: choosing input and output below saves settings, and
+        // that save must already include them.
+        for saved in settings.slots {
+            let slot = PluginSlot(name: saved.name, effect: saved.effect, isBypassed: saved.isBypassed)
+            chain.append(slot)
+            if let state = saved.state {
+                pendingStates[slot.id] = state
+            }
+        }
+        if let uid = settings.outputDeviceUID,
+           let device = outputDevices.first(where: { $0.uid == uid }),
+           device.id != selectedOutputID {
+            selectOutput(device.id)
+        }
+        selectInput(settings.input)
+        syncEngine()
+        errorMessage = nil
+    }
+
+    func saveSettings() {
+        let settings = HostSettings(
+            input: input,
+            outputDeviceUID: outputDevices.first { $0.id == selectedOutputID }?.uid,
+            slots: chain.slots.compactMap { slot in
+                slot.effect.map { effect in
+                    SavedSlot(name: slot.name, effect: effect, isBypassed: slot.isBypassed,
+                              state: engine.savedState(for: slot.id) ?? pendingStates[slot.id])
+                }
+            }
+        )
+        do {
+            try SettingsStore.save(settings, to: Self.settingsURL)
+        } catch {
+            errorMessage = "Couldn't save settings: \(error.localizedDescription)"
+        }
     }
 
     func refreshOutputDevices() {
@@ -44,6 +102,7 @@ final class HostModel: ObservableObject {
             try engine.setInput(source)
             input = source
             errorMessage = nil
+            saveSettings()
         } catch {
             errorMessage = "Couldn't switch input: \(error.localizedDescription)"
         }
@@ -55,6 +114,7 @@ final class HostModel: ObservableObject {
             try engine.setOutputDevice(deviceID)
             selectedOutputID = deviceID
             errorMessage = nil
+            saveSettings()
         } catch {
             errorMessage = "Couldn't switch output: \(error.localizedDescription)"
         }
@@ -70,6 +130,7 @@ final class HostModel: ObservableObject {
         guard let index = chain.index(of: id) else { return }
         chain.remove(at: index)
         pluginWindows.close(slotID: id)
+        pendingStates[id] = nil
         syncEngine()
     }
 
@@ -110,11 +171,16 @@ final class HostModel: ObservableObject {
         Task {
             do {
                 try await engine.setChain(slots)
+                for (slotID, state) in pendingStates where engine.audioUnit(for: slotID) != nil {
+                    engine.restoreState(state, for: slotID)
+                    pendingStates[slotID] = nil
+                }
                 errorMessage = nil
             } catch {
                 errorMessage = "Couldn't load effect: \(error.localizedDescription)"
             }
             isRunning = engine.isRunning
+            saveSettings()
         }
     }
 }
