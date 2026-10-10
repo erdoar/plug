@@ -132,6 +132,22 @@ public enum QuickAction: Codable, Equatable {
         }
     }
 
+    /// The PATH for programs a button starts. An app opened from the Dock or
+    /// Finder gets only the system folders, so commands installed by
+    /// Homebrew or Claude Code's installer (and anything they run, such as
+    /// `gh`) wouldn't be found. Those folders go first, then whatever PATH
+    /// Plug was given, without repeats.
+    public static func searchPath(home: String, current: String?) -> String {
+        let preferred = [home + "/.local/bin", "/opt/homebrew/bin", "/opt/homebrew/sbin", "/usr/local/bin"]
+        let system = ["/usr/bin", "/bin", "/usr/sbin", "/sbin"]
+        let given = (current ?? "").split(separator: ":").map(String.init).filter { !$0.isEmpty }
+        var folders: [String] = []
+        for folder in preferred + given + system where !folders.contains(folder) {
+            folders.append(folder)
+        }
+        return folders.joined(separator: ":")
+    }
+
     /// Where Claude Code's installers put the `claude` command, most likely
     /// first.
     public static func claudeLocations(home: String) -> [String] {

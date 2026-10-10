@@ -153,6 +153,9 @@ final class QuickButtonsModel: ObservableObject {
         process.executableURL = URL(fileURLWithPath: arguments[0])
         process.arguments = Array(arguments.dropFirst())
         process.currentDirectoryURL = folder
+        var environment = ProcessInfo.processInfo.environment
+        environment["PATH"] = QuickAction.searchPath(home: NSHomeDirectory(), current: environment["PATH"])
+        process.environment = environment
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = pipe

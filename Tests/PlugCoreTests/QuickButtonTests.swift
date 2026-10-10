@@ -115,4 +115,12 @@ final class QuickButtonTests: XCTestCase {
         XCTAssertNil(QuickAction.claude(prompt: "/run", folder: " ").workingFolder)
         XCTAssertNil(QuickAction.shell(command: "ls").workingFolder)
     }
+
+    func testSearchPathPutsInstallFoldersFirstWithoutRepeats() {
+        XCTAssertEqual(QuickAction.searchPath(home: "/Users/a", current: "/usr/bin:/bin:/usr/sbin:/sbin"),
+                       "/Users/a/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin")
+        XCTAssertEqual(QuickAction.searchPath(home: "/h", current: "/custom::/opt/homebrew/bin"),
+                       "/h/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/custom:/usr/bin:/bin:/usr/sbin:/sbin")
+        XCTAssertTrue(QuickAction.searchPath(home: "/h", current: nil).hasSuffix("/usr/bin:/bin:/usr/sbin:/sbin"))
+    }
 }
