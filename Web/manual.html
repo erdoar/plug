@@ -135,6 +135,22 @@ Nobody is there to approve anything, so Claude is refused whatever isn't
 allowed.</li>
 </ul></li>
 </ul>
+<h3 id="example-send-a-message-to-a-claude-cloud-session">Example: send
+a message to a Claude cloud session</h3>
+<p>A <strong>Run command</strong> button can hand a prompt to one of
+your Claude Code sessions on claude.ai, so the work runs there instead
+of on this Mac:</p>
+<ol type="1">
+<li>Open the session on claude.ai and copy its ID from the address bar:
+the part starting <code>session_</code>.</li>
+<li>Make a <strong>Run command</strong> button with the command:
+<code>claude -p "Your prompt here" --cloud session_YOUR_SESSION_ID</code></li>
+<li>Tick <strong>Show the result in a window</strong>.</li>
+</ol>
+<p>Clicking it shows <strong>Sent to cloud session.</strong> in a few
+seconds. The session then works on the prompt, and you read the result
+there. Claude Code on this Mac must be signed in to the same Claude
+account as the session, and the session must not be archived.</p>
 <p>Tick <strong>Show the result in a window</strong> to see what a
 command printed. Click a button while it's still running to stop it.
 Drag buttons in the list to change their order, and select one and click
