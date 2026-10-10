@@ -71,7 +71,7 @@ A button can:
   - **Claude may** sets what it can do there: read and answer only, or also edit files.
   - **Also allow** names commands it may run, separated by commas, such as `Bash(swift test),Bash(scripts/bundle.sh)`. Nobody is there to approve anything, so Claude is refused whatever isn't allowed.
 
-Tick **Show the result in a window** to see what a command printed. Click a button while it's still running to stop it. Drag buttons in the list to change their order, and use **–** to remove one.
+Tick **Show the result in a window** to see what a command printed. Click a button while it's still running to stop it. Drag buttons in the list to change their order, and select one and click **–** (or press Delete, or right-click it and choose **Delete**) to remove it.
 
 ## Presets
 

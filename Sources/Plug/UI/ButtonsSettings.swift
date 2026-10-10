@@ -17,9 +17,17 @@ struct ButtonsSettings: View {
                 List(selection: $selection) {
                     ForEach(buttons.buttons) { button in
                         Label(button.title.isEmpty ? "Untitled" : button.title, systemImage: button.symbol)
-                            .tag(button.id)
+                            // The same type as the selection (UUID?), so a
+                            // click really selects the row.
+                            .tag(Optional(button.id))
+                            .contextMenu {
+                                Button("Delete") { remove(button.id) }
+                            }
                     }
                     .onMove { buttons.move(fromOffsets: $0, toOffset: $1) }
+                }
+                .onDeleteCommand {
+                    if let selection { remove(selection) }
                 }
                 Divider()
                 HStack(spacing: 2) {
@@ -36,10 +44,7 @@ struct ButtonsSettings: View {
                     .fixedSize()
                     .help("Add a button")
                     Button {
-                        if let selection {
-                            buttons.remove(id: selection)
-                            self.selection = buttons.buttons.first?.id
-                        }
+                        if let selection { remove(selection) }
                     } label: {
                         Image(systemName: "minus")
                     }
@@ -76,6 +81,14 @@ struct ButtonsSettings: View {
                 selection = buttons.buttons.first?.id
             }
         }
+    }
+
+    /// Removes a button and selects the one now in its place, if any.
+    private func remove(_ id: UUID) {
+        let index = buttons.buttons.firstIndex { $0.id == id } ?? 0
+        buttons.remove(id: id)
+        let remaining = buttons.buttons
+        selection = remaining.isEmpty ? nil : remaining[min(index, remaining.count - 1)].id
     }
 
     private func binding(for id: UUID) -> Binding<QuickButton>? {
