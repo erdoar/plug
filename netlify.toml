@@ -1,0 +1,3 @@
+# Plug's website: the static web pack in Web/, served at plug.nulitica.com.
+[build]
+  publish = "Web"
